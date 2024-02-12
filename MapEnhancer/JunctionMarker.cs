@@ -39,7 +39,6 @@ namespace MapEnhancer
 		{
 			var setSwitch = new RequestSetSwitch(junction.id, !junction.isThrown);
 			StateManager.ApplyLocal(setSwitch);
-			//junction.Switch(Junction.SwitchMode.REGULAR);
 			SetColors();
 		}
 
@@ -51,8 +50,6 @@ namespace MapEnhancer
 				left.SetAlpha(0.8f);
 				right.SetColor(Color.red);
 				right.SetAlpha(0.5f);
-				//left.material = matJunctionGreen;
-				//right.material = matJunctionRed;
 			}
 			else
 			{
@@ -60,8 +57,6 @@ namespace MapEnhancer
 				left.SetAlpha(0.5f);
 				right.SetColor(Color.green);
 				right.SetAlpha(0.8f);
-				//left.material = matJunctionRed;
-				//right.material = matJunctionGreen;
 			}
 		}
 
