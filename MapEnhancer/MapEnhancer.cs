@@ -53,13 +53,7 @@ public class MapEnhancer : MonoBehaviour
 		Messenger.Default.Unregister<MapDidLoadEvent>(this);
 		Messenger.Default.Unregister<MapWillUnloadEvent>(this);
 
-		if (cullingGroup != null)
-		{
-			cullingGroup.Dispose();
-		}
-		cullingGroup = null;
-
-		if (MapState != MapStates.MAPUNLOADING)
+		if (MapState == MapStates.MAPLOADED)
 		{
 			OnMapWillUnload(new MapWillUnloadEvent());
 		}
@@ -94,6 +88,12 @@ public class MapEnhancer : MonoBehaviour
 
 		MapState = MapStates.MAPUNLOADING;
 		Messenger.Default.Unregister<WorldDidMoveEvent>(this);
+		if (cullingGroup != null)
+		{
+			cullingGroup.Dispose();
+		}
+		cullingGroup = null;
+
 		if (Junctions != null) Destroy(Junctions);
 		junctionMarkers.Clear();
 		MapWindow.instance._window.OnShownDidChange -= OnMapWindowShown;
@@ -181,12 +181,12 @@ public class MapEnhancer : MonoBehaviour
 			junctionMarkers.Add(new Entry(sd, junctionMarker));
 			junctionMarker.transform.localPosition = sd.geometry.switchHome + Vector3.up * 100f;
 			junctionMarker.transform.localRotation = sd.geometry.aPointRail.Points.First().Rotation;
-
-			GameObject indicator = sd.geometry.aPointRail.hand == Hand.Right ?
-					indicator = GameObject.Instantiate<GameObject>(JunctionMarker.junctionMarkerPrefabL, junctionMarker.transform) :
-					indicator = GameObject.Instantiate<GameObject>(JunctionMarker.junctionMarkerPrefabR, junctionMarker.transform);
-
-			indicator.GetComponent<JunctionMarker>().Init(node);
+			JunctionMarker jm = sd.geometry.aPointRail.hand == Hand.Right ?
+				JunctionMarker.junctionMarkerPrefabL :
+				JunctionMarker.junctionMarkerPrefabR;
+			
+			jm = GameObject.Instantiate(jm, junctionMarker.transform);
+			jm.junction = node;
 		}
 	}
 
