@@ -1,5 +1,6 @@
 using Game.Messages;
 using Game.State;
+using MapEnhancer.UMM;
 using Track;
 using UI.Map;
 using UnityEngine;
@@ -13,20 +14,18 @@ namespace MapEnhancer
 		public static Material matJunctionRed;
 
 		private static GameObject prefabHolder;
-		public static GameObject junctionMarkerPrefabL;
-		public static GameObject junctionMarkerPrefabR;
+		public static JunctionMarker junctionMarkerPrefabL;
+		public static JunctionMarker junctionMarkerPrefabR;
 
 		//public MeshRenderer left;
 		//public MeshRenderer right;
 		public CanvasRenderer left;
 		public CanvasRenderer right;
 		public int id { get; private set; }
-		public TrackNode junction { get; private set; }
-
-		public void Init(/*int id,*/ TrackNode junction)
+		public TrackNode junction;
+		
+		public void Start()
 		{
-			//this.id = id;
-			this.junction = junction;
 			SetColors();
 			foreach (var icon in GetComponentsInChildren<MapIcon>())
 			{
@@ -39,7 +38,6 @@ namespace MapEnhancer
 		{
 			var setSwitch = new RequestSetSwitch(junction.id, !junction.isThrown);
 			StateManager.ApplyLocal(setSwitch);
-			//junction.Switch(Junction.SwitchMode.REGULAR);
 			SetColors();
 		}
 
@@ -51,8 +49,6 @@ namespace MapEnhancer
 				left.SetAlpha(0.8f);
 				right.SetColor(Color.red);
 				right.SetAlpha(0.5f);
-				//left.material = matJunctionGreen;
-				//right.material = matJunctionRed;
 			}
 			else
 			{
@@ -60,15 +56,11 @@ namespace MapEnhancer
 				left.SetAlpha(0.5f);
 				right.SetColor(Color.green);
 				right.SetAlpha(0.8f);
-				//left.material = matJunctionRed;
-				//right.material = matJunctionGreen;
 			}
 		}
 
 		void OnDestroy()
 		{
-			if (MapEnhancer.MapState == MapEnhancer.MapStates.MAPUNLOADING) return;
-
 			foreach (var icon in GetComponentsInChildren<MapIcon>())
 			{
 				icon.OnClick -= OnMapMarkerPressed;
@@ -120,7 +112,8 @@ namespace MapEnhancer
 			right.GetComponent<RectTransform>().anchoredPosition = new Vector2(-(0.25f * 43.75f + 10f), 0f);
 			left.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
 			right.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
-			junctionMarkerPrefabR = Instantiate(junctionMarker, prefabHolder.transform);
+			junctionMarkerPrefabR = Instantiate(markerController, prefabHolder.transform);
+			junctionMarkerPrefabR.gameObject.hideFlags = HideFlags.HideAndDontSave;
 			left.GetComponent<RectTransform>().anchoredPosition = new Vector2(-(0.25f * 43.75f + 10f), 0f);
 			right.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.25f * 43.75f + 10f, 0f);
 			left.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
@@ -128,7 +121,7 @@ namespace MapEnhancer
 			junctionMarkerPrefabR.name = "Indicators (R)";
 			//left.GetComponentInChildren<MeshFilter>().mesh = arrow;
 			//right.GetComponentInChildren<MeshFilter>().mesh = doubleArrow;
-			junctionMarkerPrefabL = junctionMarker;
+			junctionMarkerPrefabL = markerController;
 
 			/*
             var matMarker = new Material(junctionMarker.GetComponentInChildren<MeshRenderer>().sharedMaterial);
