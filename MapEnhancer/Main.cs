@@ -72,15 +72,21 @@ public static class Loader
 		return true;
 	}
 
-	private static void OnGUI(UnityModManager.ModEntry modEntry)
+	public class MapEnhancerSettings : UnityModManager.ModSettings
 	{
-		Settings.Draw(ModEntry);
-	}
-
-	public class MapEnhancerSettings : UnityModManager.ModSettings, IDrawable
-	{
-		[Draw("Junction Marker Scale", Type = DrawType.Slider, Min = 0.1f, Max = 4f)]
 		public float MarkerScale = 0.25f;
+
+		public float MarkerCutoff = 0.12f;
+
+		public static readonly Color TrackColorMainlineOrig = new Color(0f, 0f, 1f, 1f);
+		public static readonly Color TrackColorBranchOrig = new Color(0f, 0.572f, 0.792f, 1f);
+		public static readonly Color TrackColorIndustrialOrig = new Color(0.749f, 0.749f, 0f, 1f);
+		public static readonly Color TrackColorUnavailableOrig = new Color(1f, 0f, 0f, 1f);
+
+		public Color TrackColorMainline = TrackColorMainlineOrig;
+		public Color TrackColorBranch = TrackColorBranchOrig;
+		public Color TrackColorIndustrial = TrackColorIndustrialOrig;
+		public Color TrackColorUnavailable = TrackColorUnavailableOrig;
 
 		public override void Save(UnityModManager.ModEntry modEntry)
 		{
@@ -93,6 +99,100 @@ public static class Loader
 		}
 	}
 
+	private static void OnGUI(UnityModManager.ModEntry modEntry)
+	{
+		bool changed = false;
+
+		using (new GUILayout.VerticalScope())
+		{
+			GUILayout.Label("Junction Marker Scale");
+			using (new GUILayout.HorizontalScope())
+			{
+				var ms = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MarkerScale, 0.1f, 0.5f, GUILayout.Width(UnityModManager.UI.Scale(200))), 2, MidpointRounding.AwayFromZero);
+				GUILayout.Label(ms.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.MarkerScale != ms)
+				{
+					Settings.MarkerScale = ms;
+					changed = true;
+				}
+			}
+
+			GUILayout.Label("Junction Marker Cutoff");
+			using (new GUILayout.HorizontalScope())
+			{
+				var co = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MarkerCutoff, 0.01f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))), 2, MidpointRounding.AwayFromZero);
+				GUILayout.Label(co.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.MarkerCutoff != co)
+				{
+					Settings.MarkerCutoff = co;
+					changed = true;
+				}
+			}
+
+			GUILayout.Label("Mainline Track Color");
+			if (DrawColor(ref Settings.TrackColorMainline)) changed = true;
+			GUILayout.Label("Branch/Yard Track Color");
+			if (DrawColor(ref Settings.TrackColorBranch)) changed = true;
+			GUILayout.Label("Industry Track Color");
+			if (DrawColor(ref Settings.TrackColorIndustrial)) changed = true;
+			GUILayout.Label("Unavailable Track Color");
+			if (DrawColor(ref Settings.TrackColorUnavailable)) changed = true;
+		}
+
+		if (changed) Settings.OnChange();
+
+		static bool DrawColor(ref Color color)
+		{
+			bool changed = false;
+			using (new GUILayout.HorizontalScope())
+			{
+				using (new GUILayout.HorizontalScope("box"))
+				{
+					float r, g, b, a;
+					using (new GUILayout.VerticalScope())
+					{
+						GUILayout.Label($"R: {color.r * 255f}");
+						using (new GUILayout.HorizontalScope(GUILayout.Width(UnityModManager.UI.Scale(133))))
+						{
+							r = (int)GUILayout.HorizontalSlider(color.r * 255f, 0f, 255f, GUILayout.Width(UnityModManager.UI.Scale(128))) / 255f;
+						}
+					}
+					using (new GUILayout.VerticalScope())
+					{
+						GUILayout.Label($"G: {color.g * 255f}");
+						using (new GUILayout.HorizontalScope(GUILayout.Width(UnityModManager.UI.Scale(133))))
+						{
+							g = (int)GUILayout.HorizontalSlider(color.g * 255f, 0f, 255f, GUILayout.Width(UnityModManager.UI.Scale(128))) / 255f;
+						}
+					}
+					using (new GUILayout.VerticalScope())
+					{
+						GUILayout.Label($"B: {color.b * 255f}");
+						using (new GUILayout.HorizontalScope(GUILayout.Width(UnityModManager.UI.Scale(133))))
+						{
+							b = (int)GUILayout.HorizontalSlider(color.b * 255f, 0f, 255f, GUILayout.Width(UnityModManager.UI.Scale(128))) / 255f;
+						}
+					}
+					using (new GUILayout.VerticalScope())
+					{
+						GUILayout.Label($"A: {color.a}");
+						using (new GUILayout.HorizontalScope(GUILayout.Width(UnityModManager.UI.Scale(133))))
+						{
+							a = (float)Math.Round(GUILayout.HorizontalSlider(color.a, 0f, 1f, GUILayout.Width(UnityModManager.UI.Scale(128))), 2, MidpointRounding.AwayFromZero);
+						}
+					}
+					if (color.r != r || color.g != g || color.b != b || color.a != a)
+					{
+						color = new Color(r, g, b, a);
+						changed = true;
+					}
+				}
+				GUILayout.FlexibleSpace();
+			}
+
+			return changed;
+		}
+	}
 
 	public static void Log(string str)
 	{

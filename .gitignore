@@ -19,6 +19,7 @@ Directory.Build.targets
 *.user
 *.userosscache
 *.sln.docstates
+NexusResources/
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
