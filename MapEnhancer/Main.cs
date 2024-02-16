@@ -74,6 +74,8 @@ public static class Loader
 
 	public class MapEnhancerSettings : UnityModManager.ModSettings
 	{
+		public bool DoubleClick = false;
+
 		public float MarkerScale = 0.25f;
 
 		public float MarkerCutoff = 0.12f;
@@ -105,6 +107,16 @@ public static class Loader
 
 		using (new GUILayout.VerticalScope())
 		{
+			using (new GUILayout.HorizontalScope())
+			{
+				var dc = GUILayout.Toggle(Settings.DoubleClick, "Require Double Click");
+				if (Settings.DoubleClick != dc)
+				{
+					Settings.DoubleClick = dc;
+					changed = true;
+				}
+			}
+
 			GUILayout.Label("Junction Marker Scale");
 			using (new GUILayout.HorizontalScope())
 			{

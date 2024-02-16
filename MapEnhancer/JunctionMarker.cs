@@ -23,6 +23,7 @@ namespace MapEnhancer
 		public CanvasRenderer right;
 		public int id { get; private set; }
 		public TrackNode junction;
+		private float lastClick;
 		
 		public void Start()
 		{
@@ -36,7 +37,17 @@ namespace MapEnhancer
 
 		void OnMapMarkerPressed()
 		{
+			if (Loader.Settings.DoubleClick)
+			{
+				if (!(Time.unscaledTime - lastClick < 0.3f))
+				{
+					lastClick = Time.unscaledTime;
+					return;
+				}
+			}
+
 			var setSwitch = new RequestSetSwitch(junction.id, !junction.isThrown);
+			if (junction.IsCTCSwitch && StateManager.AccessLevel < Game.AccessControl.AccessLevel.Dispatcher) return;
 			StateManager.ApplyLocal(setSwitch);
 			SetColors();
 		}
@@ -47,14 +58,14 @@ namespace MapEnhancer
 			{
 				left.SetColor(Color.green);
 				left.SetAlpha(0.8f);
-				right.SetColor(Color.red);
+				right.SetColor(Color.white);
 				right.SetAlpha(0.5f);
 			}
 			else
 			{
-				left.SetColor(Color.red);
+				left.SetColor(Color.white);
 				left.SetAlpha(0.5f);
-				right.SetColor(Color.green);
+				right.SetColor(Color.red);
 				right.SetAlpha(0.8f);
 			}
 		}

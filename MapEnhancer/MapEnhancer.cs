@@ -1,11 +1,16 @@
 using Core;
 using GalaSoft.MvvmLight.Messaging;
+using Game;
+using Game.AccessControl;
 using Game.Events;
+using Game.Messages;
 using Game.State;
 using HarmonyLib;
 using Helpers;
 using MapEnhancer.UMM;
 using Model.OpsNew;
+using Network;
+using Network.Client;
 using RollingStock;
 using System;
 using System.Collections.Generic;
@@ -120,7 +125,7 @@ public class MapEnhancer : MonoBehaviour
 		Junctions.SetActive(MapWindow.instance._window.IsShown);
 		JunctionsMainline = new GameObject("Mainline Junctions");
 		JunctionsMainline.transform.SetParent(Junctions.transform, false);
-		JunctionsBranch = new GameObject("Mainline Junctions");
+		JunctionsBranch = new GameObject("Branch Junctions");
 		JunctionsBranch.transform.SetParent(Junctions.transform, false);
 		Junctions.SetActive(MapWindow.instance._window.IsShown);
 		MapWindow.instance._window.OnShownDidChange += OnMapWindowShown;
@@ -387,6 +392,17 @@ public class MapEnhancer : MonoBehaviour
 		private static void Postfix(MapBuilder __instance)
 		{
 				Instance?.JunctionsBranch?.SetActive(__instance.NormalizedScale <= Loader.Settings.MarkerCutoff);
+		}
+	}
+
+	[HarmonyPatch(typeof(TrainController), nameof(TrainController.HandleRequestSetSwitch))]
+	private static class HostAccessLevelSetSwitchPatch
+	{
+		private static bool Prefix(TrainController __instance, RequestSetSwitch setSwitch, IPlayer sender)
+		{
+			TrackNode node = __instance.graph.GetNode(setSwitch.nodeId);
+			if (node.IsCTCSwitch && HostManager.Shared.AccessLevelForPlayerId(sender.PlayerId) < AccessLevel.Dispatcher) return false;
+			return true;
 		}
 	}
 }

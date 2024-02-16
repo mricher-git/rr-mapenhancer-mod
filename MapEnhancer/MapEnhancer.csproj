@@ -9,7 +9,6 @@
 
 	<!-- Krafs Publicizer -->
 	<ItemGroup>
-		<PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
 		<Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
 	</ItemGroup>
 
@@ -18,6 +17,18 @@
 		<Reference Include="Assembly-CSharp" />
 		<Reference Include="Core" />
 		<Reference Include="Unity.RenderPipelines.Universal.Runtime" />
+	</ItemGroup>
+
+	<!-- Mod Loader -->
+	<ItemGroup>
+		<PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
+		<PackageReference Include="UnityModManager" Version="0.27.5" PrivateAssets="all" />
+	</ItemGroup>
+
+	<!-- Null Checking -->
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="Nullable" Version="1.3.1" PrivateAssets="all" />
 	</ItemGroup>
 
 	<!-- Unity -->
@@ -30,18 +41,7 @@
 		<Reference Include="UnityEngine.UIModule">
 		</Reference>
 	</ItemGroup>
-
-	<!-- Mod Loader -->
-	<ItemGroup>
-		<PackageReference Include="UnityModManager" Version="0.27.5" PrivateAssets="all" />
-	</ItemGroup>
-
-	<!-- Null Checking -->
-	<ItemGroup>
-		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Nullable" Version="1.3.1" PrivateAssets="all" />
-	</ItemGroup>
-
+	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<!-- Copy to build folder -->
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/" />
