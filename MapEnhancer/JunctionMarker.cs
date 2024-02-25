@@ -5,6 +5,7 @@ using Track;
 using UI.Map;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.UI;
 
 namespace MapEnhancer
 {
@@ -19,8 +20,8 @@ namespace MapEnhancer
 
 		//public MeshRenderer left;
 		//public MeshRenderer right;
-		public CanvasRenderer left;
-		public CanvasRenderer right;
+		public Image left;
+		public Image right;
 		public int id { get; private set; }
 		public TrackNode junction;
 		private float lastClick;
@@ -49,24 +50,19 @@ namespace MapEnhancer
 			var setSwitch = new RequestSetSwitch(junction.id, !junction.isThrown);
 			if (junction.IsCTCSwitch && StateManager.AccessLevel < Game.AccessControl.AccessLevel.Dispatcher) return;
 			StateManager.ApplyLocal(setSwitch);
-			SetColors();
 		}
 
 		void SetColors()
 		{
 			if (!junction.isThrown)
 			{
-				left.SetColor(Color.green);
-				left.SetAlpha(0.8f);
-				right.SetColor(Color.white);
-				right.SetAlpha(0.5f);
+				left.color = new Color(0f, 1f, 0f, 0.8f);
+				right.color = new Color(1f, 1f, 1f, 0.5f);
 			}
 			else
 			{
-				left.SetColor(Color.white);
-				left.SetAlpha(0.5f);
-				right.SetColor(Color.red);
-				right.SetAlpha(0.8f);
+				left.color = new Color(1f, 1f, 1f, 0.5f);
+				right.color = new Color(1f, 0f, 0f, 0.8f);
 			}
 		}
 
@@ -111,13 +107,13 @@ namespace MapEnhancer
 			var right = Instantiate(junctionMarker.transform.GetChild(0), junctionMarker.transform);
 			right.gameObject.name = "Indicator";
 			//right.GetComponentInChildren<MeshFilter>().mesh = arrow;
-			markerController.left = left.GetComponentInChildren<CanvasRenderer>(true);
-			markerController.right = right.GetComponentInChildren<CanvasRenderer>(true);
+			markerController.left = left.GetComponentInChildren<Image>(true);
+			markerController.right = right.GetComponentInChildren<Image>(true);
 
 			//left.transform.localPosition = new Vector3(40f, 0f, 0f);
 
-			left.transform.localScale = new Vector3(0.5f, 0.25f, 1f);
-			right.transform.localScale = new Vector3(0.5f, 0.25f, 1f);
+			left.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
+			right.transform.localScale = new Vector3(0.5f, 0.25f, 0.5f);
 			//right.transform.localPosition = new Vector3(-40f, 0f, 0f);
 			left.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.25f * 40f + 8f, 0f);
 			right.GetComponent<RectTransform>().anchoredPosition = new Vector2(-(0.25f * 40f + 8f), 0f);

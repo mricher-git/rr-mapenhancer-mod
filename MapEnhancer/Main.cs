@@ -129,7 +129,7 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Label("Junction Marker Cutoff");
+			GUILayout.Label("Junction Non-Mainline Marker Cutoff");
 			using (new GUILayout.HorizontalScope())
 			{
 				var co = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MarkerCutoff, 0.01f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))), 2, MidpointRounding.AwayFromZero);

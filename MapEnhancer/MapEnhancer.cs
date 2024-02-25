@@ -9,9 +9,6 @@ using HarmonyLib;
 using Helpers;
 using MapEnhancer.UMM;
 using Model.OpsNew;
-using Network;
-using Network.Client;
-using RollingStock;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,9 +31,7 @@ public class MapEnhancer : MonoBehaviour
 	private CullingGroup cullingGroup;
 	private BoundingSphere[] cullingSpheres;
 
-	private static HashSet<string> _mainlineSwitches;
 	private static HashSet<string> _mainlineSegments;
-
 	public static HashSet<string> mainlineSegments
 	{
 		get
@@ -47,6 +42,8 @@ public class MapEnhancer : MonoBehaviour
 			return _mainlineSegments!;
 		}
 	}
+
+	private static HashSet<string> _mainlineSwitches;
 	public static HashSet<string> mainlineSwitches
 	{
 		get
@@ -237,7 +234,7 @@ public class MapEnhancer : MonoBehaviour
 			else
 				junctionMarker.transform.SetParent(JunctionsBranch.transform, false);
 			junctionMarkers.Add(new Entry(sd, junctionMarker));
-			junctionMarker.transform.localPosition = sd.geometry.switchHome + Vector3.up * 100f;
+			junctionMarker.transform.localPosition = sd.geometry.switchHome + Vector3.up * 50f;
 			junctionMarker.transform.localRotation = sd.geometry.aPointRail.Points.First().Rotation;
 			JunctionMarker jm = sd.geometry.aPointRail.hand == Hand.Right ?
 				JunctionMarker.junctionMarkerPrefabL :
@@ -258,7 +255,7 @@ public class MapEnhancer : MonoBehaviour
 			if (rt != null)
 			{
 				rt.anchoredPosition = new Vector2(Mathf.Sign(rt.anchoredPosition.x) * (Settings.MarkerScale * 40f + 8f), 0f);
-				rt.localScale = new Vector3(Settings.MarkerScale * 2f, Settings.MarkerScale, 1f);
+				rt.localScale = new Vector3(Settings.MarkerScale * 2f, Settings.MarkerScale, Settings.MarkerScale * 2f);
 			}
 		}
 
