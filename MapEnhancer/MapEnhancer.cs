@@ -12,6 +12,7 @@ using Model.OpsNew;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using Track;
 using Track.Signals;
 using UI.Map;
@@ -259,10 +260,14 @@ public class MapEnhancer : MonoBehaviour
 			}
 		}
 
+		MapBuilder.Shared.segmentLineWidthMin = Settings.TrackLineThickness;
+		MapBuilder.Shared.segmentLineWidthMax = Settings.MapZoomMax / 5000f * 20;
+
 		if (MapWindow.instance._window.IsShown)
 		{
 			MapWindow.instance.mapBuilder.Rebuild();
-			MapBuilder.Shared.UpdateForZoom();
+			MapBuilder.Shared.Zoom(0, Vector3.zero);
+			OnMapWindowShown(true);
 		}
 	}
 
@@ -400,6 +405,87 @@ public class MapEnhancer : MonoBehaviour
 			TrackNode node = __instance.graph.GetNode(setSwitch.nodeId);
 			if (node.IsCTCSwitch && HostManager.Shared.AccessLevelForPlayerId(sender.PlayerId) < AccessLevel.Dispatcher) return false;
 			return true;
+		}
+	}
+	
+	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.Zoom))]
+	public static class ChangeMinMaxMapZoom
+	{
+		static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var codeMatcher = new CodeMatcher(instructions)
+				.MatchStartForward(
+				new CodeMatch(OpCodes.Ldc_R4, 100f),
+				new CodeMatch(OpCodes.Ldc_R4, 5000f),
+				new CodeMatch(OpCodes.Call))//, ((Func<GameObject, Transform, GameObject>)UnityEngine.Object.Instantiate<GameObject>).Method.GetGenericMethodDefinition()))
+				.ThrowIfNotMatch("Could not find Mathf.Clamp.map")
+				.SetAndAdvance(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings)))
+				.SetAndAdvance(OpCodes.Ldfld, AccessTools.Field(typeof(Loader.MapEnhancerSettings), nameof(Loader.MapEnhancerSettings.MapZoomMin)))
+				.InsertAndAdvance(new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings))))
+				.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Loader.MapEnhancerSettings), nameof(Loader.MapEnhancerSettings.MapZoomMax))));
+			return codeMatcher.InstructionEnumeration();
+		}
+	}
+	
+	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.NormalizedScale), MethodType.Getter)]
+	private static class ChangeMinMaxMapZoom2
+	{
+		private static bool Prefix(Camera ___mapCamera, ref float __result)
+		{
+			__result = Mathf.InverseLerp(Instance?.Settings.MapZoomMin ?? 100f,
+				Instance?.Settings.MapZoomMax ?? 5000f, ___mapCamera.orthographicSize);
+			return false;
+		}
+	}
+
+	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.IconScale), MethodType.Getter)]
+	private static class ChangeMinMaxMapZoom3
+	{
+		private static bool Prefix(MapBuilder __instance, ref float __result)
+		{
+			if (Instance == null) return true;
+
+			var min = Mathf.LerpUnclamped(0.2f, 4f, InverseLerpUnclamped(100f, 5000f, Instance.Settings.MapZoomMin));
+			var max = Mathf.LerpUnclamped(0.2f, 4f, InverseLerpUnclamped(100f, 5000f, Instance.Settings.MapZoomMax));
+			__result = Mathf.Lerp(min, max, __instance.NormalizedScale); ;
+			return false;
+		}
+
+		public static float InverseLerpUnclamped(float a, float b, float value)
+		{
+			if (a != b)
+			{
+				return (value - a) / (b - a);
+			}
+
+			return 0f;
+		}
+	}
+
+	[HarmonyPatch(typeof(MapLabel), nameof(MapLabel.SetZoom))]
+	private static class ChangeMinMaxMapZoom4
+	{
+		private static bool Prefix(ref float s)
+		{
+			s = s / 4f * 3.5f;
+			return true;
+		}
+	}
+	
+	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.UpdateCullingSpheres))]
+	public static class IncreaseBoundingSphereForSplinesPatch
+	{
+		static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var codeMatcher = new CodeMatcher(instructions)
+				.MatchStartForward(
+				new CodeMatch(OpCodes.Ldloc_3),
+				new CodeMatch(OpCodes.Ldc_R4, 1f))
+				//new CodeMatch(OpCodes.Newobj))//, ((Func<GameObject, Transform, GameObject>)UnityEngine.Object.Instantiate<GameObject>).Method.GetGenericMethodDefinition()))
+				.ThrowIfNotMatch("Could not find new BoundingSphere")
+				.Advance(1)
+				.Set(OpCodes.Ldc_R4, 100f);
+			return codeMatcher.InstructionEnumeration();
 		}
 	}
 }

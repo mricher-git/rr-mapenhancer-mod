@@ -77,8 +77,12 @@ public static class Loader
 		public bool DoubleClick = false;
 
 		public float MarkerScale = 0.25f;
-
 		public float MarkerCutoff = 0.12f;
+
+		public float MapZoomMin = 50f;
+		public float MapZoomMax = 5000f;
+
+		public float TrackLineThickness = 1f;
 
 		public static readonly Color TrackColorMainlineOrig = new Color(0f, 0f, 1f, 1f);
 		public static readonly Color TrackColorBranchOrig = new Color(0f, 0.572f, 0.792f, 1f);
@@ -117,6 +121,31 @@ public static class Loader
 				}
 			}
 
+			GUILayout.Space(5);		
+			GUILayout.Label("Map Zoom Min (lower = more zoom)");
+			using (new GUILayout.HorizontalScope())
+			{
+				var zoomMin = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MapZoomMin, 50f, 100f, GUILayout.Width(UnityModManager.UI.Scale(200))), 0, MidpointRounding.AwayFromZero);
+				GUILayout.Label(zoomMin.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.MapZoomMin != zoomMin)
+				{
+					Settings.MapZoomMin = zoomMin;
+					changed = true;
+				}
+			}
+
+			GUILayout.Label("Map Zoom Max (higher = more zoom)");
+			using (new GUILayout.HorizontalScope())
+			{
+				var zoomMax = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MapZoomMax, 5000f, 15000f, GUILayout.Width(UnityModManager.UI.Scale(200))), 0, MidpointRounding.AwayFromZero);
+				GUILayout.Label(zoomMax.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.MapZoomMax != zoomMax)
+				{
+					Settings.MapZoomMax = zoomMax;
+					changed = true;
+				}
+			}
+
 			GUILayout.Label("Junction Marker Scale");
 			using (new GUILayout.HorizontalScope())
 			{
@@ -141,6 +170,20 @@ public static class Loader
 				}
 			}
 
+			GUILayout.Space(5);
+			GUILayout.Label("Track Line Thickness");
+			using (new GUILayout.HorizontalScope())
+			{
+				var thickness = (float)Math.Round(GUILayout.HorizontalSlider(Settings.TrackLineThickness, 0.5f, 2f, GUILayout.Width(UnityModManager.UI.Scale(200))) * 4, 0, MidpointRounding.AwayFromZero) / 4;
+				GUILayout.Label(thickness.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.TrackLineThickness != thickness)
+				{
+					Settings.TrackLineThickness = thickness;
+					changed = true;
+				}
+			}
+
+			GUILayout.Space(5);
 			GUILayout.Label("Mainline Track Color");
 			if (DrawColor(ref Settings.TrackColorMainline)) changed = true;
 			GUILayout.Label("Branch/Yard Track Color");
