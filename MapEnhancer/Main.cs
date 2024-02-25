@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityModManagerNet;
 
 namespace MapEnhancer.UMM;
@@ -86,6 +87,8 @@ public static class Loader
 		public float MapZoomMax = 5000f;
 
 		public float TrackLineThickness = 1f;
+
+		public MsaaQuality MSAA = MsaaQuality._4x;
 
 		public static readonly Color TrackColorMainlineOrig = new Color(0f, 0f, 1f, 1f);
 		public static readonly Color TrackColorBranchOrig = new Color(0f, 0.572f, 0.792f, 1f);
@@ -201,6 +204,22 @@ public static class Loader
 				{
 					Settings.TrackLineThickness = thickness;
 					changed = true;
+				}
+			}
+
+			GUILayout.Space(5);
+			GUILayout.Label("Map Window Antialiasing");
+			using (new GUILayout.HorizontalScope())
+			{
+				var values = (int[])Enum.GetValues(Settings.MSAA.GetType());
+				int msaaIndex = Array.IndexOf(values, Settings.MSAA);
+				if (UnityModManager.UI.PopupToggleGroup(ref msaaIndex, Enum.GetNames(Settings.MSAA.GetType()), null, GUILayout.ExpandWidth(false)))
+				{
+					if (values[msaaIndex] != (int)Settings.MSAA)
+					{
+						Settings.MSAA = (MsaaQuality)values[msaaIndex];
+						changed = true;
+					}
 				}
 			}
 

@@ -401,6 +401,13 @@ public class MapEnhancer : MonoBehaviour
 		mat = GetTrackClassMaterial(mapBuilder, 3);
 		mat.color = Settings.TrackColorUnavailable;
 
+		var renderTex = mapBuilder.mapCamera.targetTexture;
+		if (renderTex && renderTex.antiAliasing != (int)Settings.MSAA)
+		{
+			renderTex.Release();
+			renderTex.antiAliasing = (int)Settings.MSAA;
+		}
+
 		if (MapWindow.instance._window.IsShown)
 		{
 			mapBuilder.mapCamera.orthographicSize =

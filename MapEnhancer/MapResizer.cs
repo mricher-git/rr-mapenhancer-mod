@@ -103,7 +103,7 @@ namespace MapEnhancer
 				rt.width = width;
 				rt.height = height;
 				mapCamera.aspect = (float)rt.width / (float)rt.height;
-				rt.antiAliasing = (int)MsaaQuality._4x;
+				rt.antiAliasing = (int)(MapEnhancer.Instance?.Settings.MSAA ?? MsaaQuality._4x);
 			}
 		}
 
