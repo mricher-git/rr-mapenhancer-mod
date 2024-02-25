@@ -8,15 +8,23 @@ using Game.State;
 using HarmonyLib;
 using Helpers;
 using MapEnhancer.UMM;
+using Model;
+using Model.Definition;
 using Model.OpsNew;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection.Emit;
+using TMPro;
 using Track;
 using Track.Signals;
+using UI;
+using UI.CarInspector;
 using UI.Map;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MapEnhancer;
 
@@ -31,6 +39,34 @@ public class MapEnhancer : MonoBehaviour
 	private List<Entry> junctionMarkers = new List<Entry>();
 	private CullingGroup cullingGroup;
 	private BoundingSphere[] cullingSpheres;
+
+	// Holder stops "prefab" from going active immediately
+	private static GameObject _prefabHolder;
+	internal static GameObject prefabHolder
+	{
+		get
+		{
+			if (_prefabHolder == null)
+			{
+				_prefabHolder = new GameObject("Prefab Holder");
+				_prefabHolder.hideFlags = HideFlags.HideAndDontSave;
+				_prefabHolder.SetActive(false);
+			}
+			return _prefabHolder;
+		}
+	}
+
+	private static MapIcon _traincarPrefab;
+	public static MapIcon? traincarPrefab
+	{
+		get
+		{
+			if (_traincarPrefab == null) CreateTraincarPrefab();
+			return _traincarPrefab;
+		}
+	}
+
+	private Coroutine traincarColorUpdater;
 
 	private static HashSet<string> _mainlineSegments;
 	public static HashSet<string> mainlineSegments
@@ -95,10 +131,12 @@ public class MapEnhancer : MonoBehaviour
 		if (JunctionMarker.matJunctionGreen != null) Destroy(JunctionMarker.matJunctionGreen);
 		if (JunctionMarker.matJunctionRed != null) Destroy(JunctionMarker.matJunctionRed);
 
-		if (JunctionMarker.junctionMarkerPrefabL != null)
+		if (prefabHolder != null)
 		{
-			Destroy(JunctionMarker.junctionMarkerPrefabL.transform.parent.gameObject);
+			//TODO cleanup sprite/tex
+			DestroyImmediate(prefabHolder);
 		}
+
 		Messenger.Default.Unregister<MapDidLoadEvent>(this);
 		Messenger.Default.Unregister<MapWillUnloadEvent>(this);
 
@@ -106,6 +144,11 @@ public class MapEnhancer : MonoBehaviour
 		{
 			OnMapWillUnload(new MapWillUnloadEvent());
 			if (MapWindow.instance._window.IsShown) MapWindow.instance.mapBuilder.Rebuild();
+
+			if (_traincarPrefab != null) Destroy(_traincarPrefab);
+			_traincarPrefab = null;
+
+			DestroyTraincarMarkers();
 		}
 		MapState = MapStates.MAINMENU;
 	}
@@ -126,7 +169,10 @@ public class MapEnhancer : MonoBehaviour
 		JunctionsBranch = new GameObject("Branch Junctions");
 		JunctionsBranch.transform.SetParent(Junctions.transform, false);
 		Junctions.SetActive(MapWindow.instance._window.IsShown);
+
 		MapWindow.instance._window.OnShownDidChange += OnMapWindowShown;
+
+		GatherTraincarMarkers();
 
 		Messenger.Default.Register<WorldDidMoveEvent>(this, new Action<WorldDidMoveEvent>(this.WorldDidMove));
 		var worldPos = WorldTransformer.GameToWorld(new Vector3(0, 0, 0));
@@ -150,6 +196,9 @@ public class MapEnhancer : MonoBehaviour
 
 		if (Junctions != null) Destroy(Junctions);
 		junctionMarkers.Clear();
+
+		if (traincarColorUpdater != null) StopCoroutine(traincarColorUpdater);
+
 		MapWindow.instance._window.OnShownDidChange -= OnMapWindowShown;
 	}
 
@@ -165,6 +214,56 @@ public class MapEnhancer : MonoBehaviour
 	private void OnMapWindowShown(bool shown)
 	{
 		Junctions?.SetActive(shown);
+
+		if (shown)
+		{
+			traincarColorUpdater = StartCoroutine(TraincarColorUpdater());
+		}
+		else
+		{
+			if (traincarColorUpdater != null) StopCoroutine(traincarColorUpdater);
+			traincarColorUpdater = null;
+		}
+	}
+
+	private IEnumerator TraincarColorUpdater()
+	{
+		WaitForSecondsRealtime wait = new WaitForSecondsRealtime(1f);
+		for (;;)
+		{
+			foreach (var marker in MapBuilder.Shared._mapIcons)
+			{
+				if (marker == null || !marker.isActiveAndEnabled) continue;
+
+				Car car = marker.transform.parent.GetComponent<Car>();
+				if (car == null) continue;
+
+				if (car.Archetype.IsFreight())
+				{
+					string text;
+					bool flag;
+					Vector3 vector;
+					OpsCarPosition opsCarPosition;
+					OpsController opsController = OpsController.Shared;
+					if (opsController != null && opsController.TryGetDestinationInfo(car, out text, out flag, out vector, out opsCarPosition))
+					{
+						Area area = opsController.AreaForCarPosition(opsCarPosition);
+
+						Color color = area ? area.tagColor : Color.gray;
+
+						if (!flag)
+						{
+							var intensity = 1 / color.maxColorComponent;
+							color *= intensity;
+						}
+						marker.GetComponentInChildren<Image>().color = color;
+					}
+				}
+
+			}
+			yield return wait;
+		}
+		yield break;
 	}
 
 	public void Rebuild()
@@ -269,6 +368,92 @@ public class MapEnhancer : MonoBehaviour
 			MapBuilder.Shared.Zoom(0, Vector3.zero);
 			OnMapWindowShown(true);
 		}
+	}
+
+	private static void CreateTraincarPrefab()
+	{
+		var sprite = LoadTexture("traincar.png", "MapTraincarIcon");
+		foreach (var mapIcon in Resources.FindObjectsOfTypeAll<MapIcon>().Where(MapIcon => MapIcon.name.StartsWith("Map Icon Locomotive")))
+		{
+			mapIcon.transform.Find("Image").localScale = new Vector3(0.8f, 0.8f, 0.8f);
+			mapIcon.transform.Find("Text").transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+		}
+		_traincarPrefab = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, prefabHolder.transform);
+		GameObject trainCarMarker = _traincarPrefab.gameObject;
+		trainCarMarker.hideFlags = HideFlags.HideAndDontSave;
+		trainCarMarker.name = "Map Icon Traincar";
+		_traincarPrefab.GetComponentInChildren<Image>().sprite = sprite;
+
+		trainCarMarker.AddComponent<CanvasCuller>();
+	}
+
+	private static Sprite? LoadTexture(string fileName, string name)
+	{
+		string iconPath = Path.Combine(Loader.ModEntry.Path, fileName);
+		var tex = new Texture2D(128, 128, TextureFormat.DXT5, false);
+		tex.name = name;
+		tex.wrapMode = TextureWrapMode.Clamp;
+		if (!ImageConversion.LoadImage(tex, File.ReadAllBytes(iconPath)))
+		{
+			Loader.Log("Unable to load traincar icon!");
+			return null;
+		}
+		Sprite sprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+		sprite.name = name;
+		return sprite;
+	}
+
+	private void GatherTraincarMarkers()
+	{
+		foreach (Car car in TrainController.Shared.Cars)
+		{
+			if (!car.Archetype.IsLocomotive())
+			{
+				var marker = car.GetComponentInChildren<MapIcon>();
+				if (!marker)
+					AddTraincarMarker(car);
+			}
+		}
+	}
+
+	private void DestroyTraincarMarkers()
+	{
+		foreach (Car car in TrainController.Shared.Cars)
+		{
+			if (!car.Archetype.IsLocomotive())
+			{
+				var marker = car.GetComponentInChildren<MapIcon>();
+				if (marker)
+					DestroyImmediate(marker.gameObject);
+			}
+		}
+	}
+
+	internal static void AddTraincarMarker(Car car)
+	{
+		car.MapIcon = Instantiate<MapIcon>(traincarPrefab, car.transform);
+		if (car.Archetype == CarArchetype.Tender)
+			car.MapIcon.SetText(car.Ident.RoadNumber);
+		else
+			car.MapIcon.SetText($"<line-height=70%>{car.Ident.ReportingMark}\n{car.Ident.RoadNumber}");
+		var image = car.MapIcon.GetComponentInChildren<Image>();
+		var scale = image.transform.localScale;
+		scale.y = (car.carLength / 11) * scale.y;
+		image.transform.localScale = scale;
+		var text = car.MapIcon.GetComponentInChildren<TMP_Text>();
+		text.horizontalAlignment = HorizontalAlignmentOptions.Left;
+		text.enableAutoSizing = false;
+		text.fontSizeMin = 19;
+		text.fontSize = 19;
+		text.autoSizeTextContainer = true;
+		text.transform.localPosition = Vector3.zero;
+
+
+		car.MapIcon.OnClick = delegate
+		{
+			CarInspector.Show(car);
+		};
+		car.UpdateMapIconPosition(car._mover.Position, car._mover.Rotation);
 	}
 
 	private class Entry
@@ -405,6 +590,15 @@ public class MapEnhancer : MonoBehaviour
 			TrackNode node = __instance.graph.GetNode(setSwitch.nodeId);
 			if (node.IsCTCSwitch && HostManager.Shared.AccessLevelForPlayerId(sender.PlayerId) < AccessLevel.Dispatcher) return false;
 			return true;
+		}
+	}
+	
+	[HarmonyPatch(typeof(Car), nameof(Car.FinishSetup))]
+	private static class CarFinishSetupPatch
+	{
+		private static void Postfix(Car __instance)
+		{
+			AddTraincarMarker(__instance);
 		}
 	}
 	

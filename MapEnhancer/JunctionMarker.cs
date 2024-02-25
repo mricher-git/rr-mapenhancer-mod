@@ -14,7 +14,6 @@ namespace MapEnhancer
 		public static Material matJunctionGreen;
 		public static Material matJunctionRed;
 
-		private static GameObject prefabHolder;
 		public static JunctionMarker junctionMarkerPrefabL;
 		public static JunctionMarker junctionMarkerPrefabR;
 
@@ -77,17 +76,13 @@ namespace MapEnhancer
 
 		public static void CreatePrefab()
 		{
-			//MapMarkersController controller = Component.FindObjectOfType<MapMarkersController>();
-			//var MapIcon = UnityEngine.Object.Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, base.transform);
-			// Holder stops "prefab" from going active immediately
-			if (prefabHolder != null) return;
+			if (junctionMarkerPrefabL != null)
+			{
+				Loader.LogDebug("Tried to make junctionMarker prefab more than once.");
+				return;
+			}
 
-			prefabHolder = new GameObject("Prefab Holder");
-			prefabHolder.hideFlags = HideFlags.HideAndDontSave;
-			prefabHolder.SetActive(false);
-
-
-			MapIcon mapIcon = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, prefabHolder.transform);
+			MapIcon mapIcon = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, MapEnhancer.prefabHolder.transform);
 			mapIcon.SetText("");
 			GameObject junctionMarker = mapIcon.gameObject;
 			junctionMarker.hideFlags = HideFlags.HideAndDontSave;
@@ -119,7 +114,7 @@ namespace MapEnhancer
 			right.GetComponent<RectTransform>().anchoredPosition = new Vector2(-(0.25f * 40f + 8f), 0f);
 			left.transform.localRotation = Quaternion.Euler(0f, 0f, 90f);
 			right.transform.localRotation = Quaternion.Euler(0f, 0f, -90f);
-			junctionMarkerPrefabR = Instantiate(markerController, prefabHolder.transform);
+			junctionMarkerPrefabR = Instantiate(markerController, MapEnhancer.prefabHolder.transform);
 			junctionMarkerPrefabR.gameObject.hideFlags = HideFlags.HideAndDontSave;
 			left.GetComponent<RectTransform>().anchoredPosition = new Vector2(-(0.25f * 40f + 8f), 0f);
 			right.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.25f * 40f + 8f, 0f);

@@ -43,16 +43,18 @@ public static class Loader
 		{
 			try
 			{
+				HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
 				var go = new GameObject("[MapEnhancer]");
 				Instance = go.AddComponent<MapEnhancer>();
 				UnityEngine.Object.DontDestroyOnLoad(go);
 				Instance.Settings = Settings;
-				HarmonyInstance.PatchAll(Assembly.GetExecutingAssembly());
 			}
 			catch (Exception ex)
 			{
 				modEntry.Logger.LogException($"Failed to load {modEntry.Info.DisplayName}:", ex);
 				HarmonyInstance?.UnpatchAll(modEntry.Info.Id);
+				if (Instance != null) UnityEngine.Object.DestroyImmediate(Instance.gameObject);
+				Instance = null;
 				return false;
 			}
 		}
