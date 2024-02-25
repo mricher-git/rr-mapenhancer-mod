@@ -2,7 +2,7 @@
 	"Id": "MapEnhancer",
 	"DisplayName": "Map Enhancer",
 	"Author": "Vanguard",
-	"Version": "1.0.1",
+	"Version": "1.1.0",
 	"AssemblyName": "MapEnhancer.dll",
 	"EntryMethod": "MapEnhancer.UMM.Loader.Load",
 	"ManagerVersion": "0.27.8",
