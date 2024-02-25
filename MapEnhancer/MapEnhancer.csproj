@@ -42,6 +42,8 @@
 		<Reference Include="UnityEngine.UI" />
 		<Reference Include="UnityEngine.UIModule" />
 		<Reference Include="UnityEngine.ImageConversionModule" />
+		<Reference Include="UnityEngine.InputLegacyModule" />
+		<Reference Include="Unity.RenderPipelines.Universal.Runtime" />
 		<Reference Include="Unity.TextMeshPro" />
 	</ItemGroup>
 	
@@ -50,6 +52,7 @@
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/" />
 		<Copy SourceFiles="$(ProjectDir)\arrow.png" DestinationFolder="../build/" />
 		<Copy SourceFiles="$(ProjectDir)\traincar.png" DestinationFolder="../build/" />
+		<Copy SourceFiles="$(ProjectDir)\flare.png" DestinationFolder="../build/" />
 
 		<!-- Package after Release build -->
 		<Exec Condition="'$(ConfigurationName)' == 'Release' And '$(OS)' == 'Windows_NT'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1)&quot;" />

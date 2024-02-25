@@ -15,7 +15,7 @@ public static class Loader
 	public static Harmony HarmonyInstance { get; private set; }
 	public static MapEnhancer Instance { get; private set; }
 
-	internal static MapEnhancerSettings Settings;
+	public static MapEnhancerSettings Settings;
 
 	private static bool Load(UnityModManager.ModEntry modEntry)
 	{
@@ -78,6 +78,7 @@ public static class Loader
 	{
 		public bool DoubleClick = false;
 
+		public float FlareScale = 0.6f;
 		public float MarkerScale = 0.25f;
 		public float MarkerCutoff = 0.12f;
 
@@ -144,6 +145,19 @@ public static class Loader
 				if (Settings.MapZoomMax != zoomMax)
 				{
 					Settings.MapZoomMax = zoomMax;
+					changed = true;
+				}
+			}
+
+			GUILayout.Space(5);
+			GUILayout.Label("Fusee Marker Scale");
+			using (new GUILayout.HorizontalScope())
+			{
+				var fs = (float)Math.Round(GUILayout.HorizontalSlider(Settings.FlareScale, 0.1f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))), 1, MidpointRounding.AwayFromZero);
+				GUILayout.Label(fs.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.FlareScale != fs)
+				{
+					Settings.FlareScale = fs;
 					changed = true;
 				}
 			}

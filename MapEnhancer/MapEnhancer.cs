@@ -7,6 +7,7 @@ using Game.Messages;
 using Game.State;
 using HarmonyLib;
 using Helpers;
+using Map.Runtime;
 using MapEnhancer.UMM;
 using Model;
 using Model.Definition;
@@ -63,6 +64,16 @@ public class MapEnhancer : MonoBehaviour
 		{
 			if (_traincarPrefab == null) CreateTraincarPrefab();
 			return _traincarPrefab;
+		}
+	}
+
+	private static MapIcon _flarePrefab;
+	public static MapIcon? flarePrefab
+	{
+		get
+		{
+			if (_flarePrefab == null) CreateFlarePrefab();
+			return _flarePrefab;
 		}
 	}
 
@@ -149,6 +160,7 @@ public class MapEnhancer : MonoBehaviour
 			_traincarPrefab = null;
 
 			DestroyTraincarMarkers();
+			DestroyFlareMarkers();
 		}
 		MapState = MapStates.MAINMENU;
 	}
@@ -173,6 +185,7 @@ public class MapEnhancer : MonoBehaviour
 		MapWindow.instance._window.OnShownDidChange += OnMapWindowShown;
 
 		GatherTraincarMarkers();
+		GatherFlareMarkers();
 
 		Messenger.Default.Register<WorldDidMoveEvent>(this, new Action<WorldDidMoveEvent>(this.WorldDidMove));
 		var worldPos = WorldTransformer.GameToWorld(new Vector3(0, 0, 0));
@@ -293,7 +306,7 @@ public class MapEnhancer : MonoBehaviour
 	private void CullingGroupStateChanged(CullingGroupEvent sphere)
 	{
 		int index = sphere.index;
-	
+
 		var sd = junctionMarkers[index].SwitchDescriptor;
 
 		if (sphere.isVisible && !sphere.wasVisible)
@@ -326,7 +339,7 @@ public class MapEnhancer : MonoBehaviour
 		{
 			var sd = kvp.Value;
 			TrackNode node = sd.node;
-			
+
 			var junctionMarker = new GameObject($"JunctionMarker ({node.id})");
 			junctionMarker.SetActive(false);
 			if (mainlineSwitches.Contains(node.id))
@@ -339,7 +352,7 @@ public class MapEnhancer : MonoBehaviour
 			JunctionMarker jm = sd.geometry.aPointRail.hand == Hand.Right ?
 				JunctionMarker.junctionMarkerPrefabL :
 				JunctionMarker.junctionMarkerPrefabR;
-			
+
 			jm = GameObject.Instantiate(jm, junctionMarker.transform);
 			jm.junction = node;
 		}
@@ -356,6 +369,15 @@ public class MapEnhancer : MonoBehaviour
 			{
 				rt.anchoredPosition = new Vector2(Mathf.Sign(rt.anchoredPosition.x) * (Settings.MarkerScale * 40f + 8f), 0f);
 				rt.localScale = new Vector3(Settings.MarkerScale * 2f, Settings.MarkerScale, Settings.MarkerScale * 2f);
+			}
+		}
+
+		foreach (var flare in FlareManager.Shared._instances.Values)
+		{
+			var icon = flare.GetComponentInChildren<Image>();
+			if (icon != null)
+			{
+				icon.transform.localScale = new Vector3(Settings.FlareScale, Settings.FlareScale, Settings.FlareScale);
 			}
 		}
 
@@ -385,6 +407,20 @@ public class MapEnhancer : MonoBehaviour
 		_traincarPrefab.GetComponentInChildren<Image>().sprite = sprite;
 
 		trainCarMarker.AddComponent<CanvasCuller>();
+	}
+
+	private static void CreateFlarePrefab()
+	{
+		var scale = Instance?.Settings.FlareScale ?? 0.6f;
+		var sprite = LoadTexture("flare.png", "MapFlareIcon");
+		_flarePrefab = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, prefabHolder.transform);
+		GameObject flareMarker = _flarePrefab.gameObject;
+		flareMarker.hideFlags = HideFlags.HideAndDontSave;
+		flareMarker.name = "Map Icon Flare";
+		if (_flarePrefab.Text) Destroy(_flarePrefab.Text);
+		var image = _flarePrefab.GetComponentInChildren<Image>();
+		image.sprite = sprite;
+		image.transform.localScale = new Vector3(scale, scale, scale);
 	}
 
 	private static Sprite? LoadTexture(string fileName, string name)
@@ -454,6 +490,80 @@ public class MapEnhancer : MonoBehaviour
 			CarInspector.Show(car);
 		};
 		car.UpdateMapIconPosition(car._mover.Position, car._mover.Rotation);
+	}
+
+	private void GatherFlareMarkers()
+	{
+		foreach (GameObject flareGO in FlareManager.Shared._instances.Values)
+		{
+			var flare = flareGO.GetComponentInChildren<FlarePickable>();
+			var marker = flare.GetComponentInChildren<MapIcon>();
+			if (!marker)
+				AddFlareMarker(flare);
+		}
+	}
+
+	private void DestroyFlareMarkers()
+	{
+		foreach (GameObject flareGO in FlareManager.Shared._instances.Values)
+		{
+				var marker = flareGO.GetComponentInChildren<MapIcon>();
+				if (marker)
+					DestroyImmediate(marker.gameObject);
+		}
+	}
+
+	internal static void AddFlareMarker(FlarePickable flare)
+	{
+		var mapIcon = Instantiate<MapIcon>(flarePrefab, flare.transform.parent);
+		var posRot = flare.transform.parent.parent.GetComponent<TrackMarker>().PositionRotation;
+		mapIcon.transform.localPosition = mapIcon.transform.localPosition + Vector3.up * 25f;
+		mapIcon.transform.rotation = Quaternion.Euler(90f, posRot.Value.Rotation.eulerAngles.y, 0f);
+		mapIcon.OnClick = delegate
+		{
+			flare.Activate();
+		};
+	}
+
+	void Update()
+	{
+		if (MapState != MapStates.MAPLOADED) return;
+
+		var mapWindow = MapWindow.instance;
+		var mapDrag = MapWindow.instance.mapDrag;
+		if (!MapWindow.instance.mapDrag._pointerOver || !GameInput.IsMouseOverGameWindow(mapWindow._window)) return;
+
+		if (GameInput.shared.PlaceFlare)
+		{
+			Vector2 viewportNormalizedPoint = mapDrag.NormalizedMousePosition();
+			Ray ray = mapWindow.RayForViewportNormalizedPoint(viewportNormalizedPoint);
+			Vector3 vector = MapManager.Instance.FindTerrainPointForXZ(WorldTransformer.WorldToGame(ray.origin));
+			Location? location = LocationFromGamePoint(vector, 50f);
+			if (location != null)
+			{
+				StateManager.ApplyLocal(new FlareAddUpdate(Graph.CreateSnapshotTrackLocation(location.Value)));
+			}
+		}
+	}
+
+	public Location? LocationFromGamePoint(Vector3 gamePosition, float radius)
+	{
+		List<Location> locations = new List<Location>();
+		foreach (TrackSegment trackSegment in Graph.Shared.segments.Values)
+		{
+			//if (Vector3.Magnitude(trackSegment.Curve.EndPoint1 - gamePosition) > 1000f) continue;
+
+			Location? result = Graph.Shared.LocationFromPoint(trackSegment, gamePosition, radius);
+			if (result.HasValue && result.Value.IsValid)
+			{
+				locations.Add((Location)result);
+			}
+		}
+
+		if (locations.Count > 0)
+			return locations.OrderBy(a => Vector3.Magnitude(a.GetPosition() - gamePosition)).First();
+
+		return null;
 	}
 
 	private class Entry
@@ -530,7 +640,6 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static void Postfix(TrackSegment __instance)
 		{
-			Loader.LogDebug($"Setting {__instance.name} {mainlineSegments.Contains(__instance.id)}");
 			if (mainlineSegments.Contains(__instance.id))
 				__instance.trackClass = TrackClass.Mainline;
 			else
@@ -578,7 +687,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static void Postfix(MapBuilder __instance)
 		{
-				Instance?.JunctionsBranch?.SetActive(__instance.NormalizedScale <= Loader.Settings.MarkerCutoff);
+			Instance?.JunctionsBranch?.SetActive(__instance.NormalizedScale <= Loader.Settings.MarkerCutoff);
 		}
 	}
 
@@ -592,7 +701,7 @@ public class MapEnhancer : MonoBehaviour
 			return true;
 		}
 	}
-	
+
 	[HarmonyPatch(typeof(Car), nameof(Car.FinishSetup))]
 	private static class CarFinishSetupPatch
 	{
@@ -680,6 +789,28 @@ public class MapEnhancer : MonoBehaviour
 				.Advance(1)
 				.Set(OpCodes.Ldc_R4, 100f);
 			return codeMatcher.InstructionEnumeration();
+		}
+	}
+	
+	[HarmonyPatch(typeof(FlarePickable), nameof(FlarePickable.Configure))]
+	private static class FlareAddUpdatePatch
+	{
+		private static void Postfix(FlarePickable __instance)
+		{
+			AddFlareMarker(__instance);
+		}
+	}
+
+	[HarmonyPatch(typeof(FlareManager), nameof(FlareManager.PlaceFlare))]
+	public static class PlaceFlareProtectionPatch
+	{
+		private static bool Prefix(Camera theCamera)
+		{
+			if (!GameInput.IsMouseOverGameWindow() || theCamera == null)
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }
