@@ -386,8 +386,10 @@ public class MapEnhancer : MonoBehaviour
 
 		if (MapWindow.instance._window.IsShown)
 		{
+			MapBuilder.Shared.mapCamera.orthographicSize =
+				Mathf.Clamp(MapBuilder.Shared.mapCamera.orthographicSize, Settings.MapZoomMin, Settings.MapZoomMax);
+			MapBuilder.Shared.UpdateForZoom();
 			MapWindow.instance.mapBuilder.Rebuild();
-			MapBuilder.Shared.Zoom(0, Vector3.zero);
 			OnMapWindowShown(true);
 		}
 	}
@@ -792,6 +794,44 @@ public class MapEnhancer : MonoBehaviour
 		}
 	}
 	
+	[HarmonyPatch]
+	public static class PreventRebuildFromMovingCamera
+	{
+		[HarmonyTranspiler]
+		[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.Rebuild))]
+		static IEnumerable<CodeInstruction> RebuildTranspiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var codeMatcher = new CodeMatcher(instructions)
+				.MatchStartForward(
+				new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(CameraSelector), "shared")),
+				new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(CameraSelector), "CurrentCameraPosition")),
+				new CodeMatch(OpCodes.Stloc_1))
+				.ThrowIfNotMatch("Could not find CameraSelector.Shared.get_CurrentCameraPosition()")
+				.RemoveInstructionsWithOffsets (0, 12);
+			return codeMatcher.InstructionEnumeration();
+		}
+
+		[HarmonyTranspiler]
+		[HarmonyPatch(typeof(MapWindow), nameof(MapWindow.OnWindowShown))]
+		static IEnumerable<CodeInstruction> OnWindowShownTranspiler(IEnumerable<CodeInstruction> instructions)
+		{
+			var codeMatcher = new CodeMatcher(instructions)
+				.MatchEndForward(
+				new CodeMatch(OpCodes.Ldarg_0),
+				new CodeMatch(OpCodes.Ldfld),
+				new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(MapBuilder), "Rebuild")))
+				.ThrowIfNotMatch("Could not find MapWindow.OnWindowShown()")
+				.InsertAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(PreventRebuildFromMovingCamera), nameof(PreventRebuildFromMovingCamera.RecenterMap))));
+			return codeMatcher.InstructionEnumeration();
+		}
+
+		public static void RecenterMap()
+		{
+			Vector3 currentCameraPosition = CameraSelector.shared.CurrentCameraPosition;
+			MapBuilder.Shared.mapCamera.transform.localPosition = new Vector3(currentCameraPosition.x, 5000f, currentCameraPosition.z);
+		}
+	}
+
 	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.UpdateCullingSpheres))]
 	public static class IncreaseBoundingSphereForSplinesPatch
 	{
