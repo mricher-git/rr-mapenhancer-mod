@@ -40,6 +40,7 @@ public class MapEnhancer : MonoBehaviour
 	private List<Entry> junctionMarkers = new List<Entry>();
 	private CullingGroup cullingGroup;
 	private BoundingSphere[] cullingSpheres;
+	private MapResizer resizer;
 
 	// Holder stops "prefab" from going active immediately
 	private static GameObject _prefabHolder;
@@ -192,7 +193,9 @@ public class MapEnhancer : MonoBehaviour
 		Junctions.transform.position = worldPos;
 
 		Rebuild();
+		resizer = MapResizer.Create();
 		OnSettingsChanged();
+		MapBuilder.Shared.Rebuild();
 	}
 
 	private void OnMapWillUnload(MapWillUnloadEvent evt)
@@ -213,6 +216,9 @@ public class MapEnhancer : MonoBehaviour
 		if (traincarColorUpdater != null) StopCoroutine(traincarColorUpdater);
 
 		MapWindow.instance._window.OnShownDidChange -= OnMapWindowShown;
+
+		if (resizer)
+			DestroyImmediate(resizer.gameObject);
 	}
 
 	private void WorldDidMove(WorldDidMoveEvent evt)
