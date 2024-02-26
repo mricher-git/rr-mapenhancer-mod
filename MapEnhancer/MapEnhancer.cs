@@ -711,6 +711,23 @@ public class MapEnhancer : MonoBehaviour
 		}
 	}
 	
+	[HarmonyPatch(typeof(Car), nameof(Car.UpdateMapIconPosition))]
+	private static class CarUpdatePositionPatch
+	{
+		private static bool Prefix(Car __instance, Vector3 position, Quaternion rotation)
+		{
+			if (__instance.MapIcon == null)
+			{
+				return false;
+			}
+			if (__instance.Archetype.IsLocomotive())
+				return true;
+			
+			__instance.MapIcon.transform.SetPositionAndRotation(position + Vector3.up * 75f, Quaternion.Euler(-90f, rotation.eulerAngles.y, 0f));
+			return false;
+		}
+	}
+
 	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.Zoom))]
 	public static class ChangeMinMaxMapZoom
 	{
