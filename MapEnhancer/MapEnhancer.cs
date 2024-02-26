@@ -373,8 +373,7 @@ public class MapEnhancer : MonoBehaviour
 			var rt = junctionMarker.GetComponent<RectTransform>();
 			if (rt != null)
 			{
-				rt.anchoredPosition = new Vector2(Mathf.Sign(rt.anchoredPosition.x) * (Settings.MarkerScale * 40f + 8f), 0f);
-				rt.localScale = new Vector3(Settings.MarkerScale * 2f, Settings.MarkerScale, Settings.MarkerScale * 2f);
+				rt.localScale = Vector3.one * Settings.JunctionMarkerScale;
 			}
 		}
 
@@ -383,7 +382,7 @@ public class MapEnhancer : MonoBehaviour
 			var icon = flare.GetComponentInChildren<Image>();
 			if (icon != null)
 			{
-				icon.transform.localScale = new Vector3(Settings.FlareScale, Settings.FlareScale, Settings.FlareScale);
+				icon.transform.localScale = Vector3.one * Settings.FlareScale;
 			}
 		}
 
@@ -456,13 +455,13 @@ public class MapEnhancer : MonoBehaviour
 		GameObject flareMarker = _flarePrefab.gameObject;
 		flareMarker.hideFlags = HideFlags.HideAndDontSave;
 		flareMarker.name = "Map Icon Flare";
-		if (_flarePrefab.Text) Destroy(_flarePrefab.Text);
+		if (_flarePrefab.Text) DestroyImmediate(_flarePrefab.Text.gameObject);
 		var image = _flarePrefab.GetComponentInChildren<Image>();
 		image.sprite = sprite;
-		image.transform.localScale = new Vector3(scale, scale, scale);
+		image.transform.localScale = Vector3.one * scale;
 	}
 
-	private static Sprite? LoadTexture(string fileName, string name)
+	public static Sprite? LoadTexture(string fileName, string name)
 	{
 		string iconPath = Path.Combine(Loader.ModEntry.Path, fileName);
 		var tex = new Texture2D(128, 128, TextureFormat.DXT5, false);
@@ -826,7 +825,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref float s)
 		{
-			s = s / 4f * 3.5f;
+			s = s / 4f * 3f;
 			return true;
 		}
 	}

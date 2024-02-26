@@ -80,7 +80,7 @@ public static class Loader
 		public bool DoubleClick = false;
 
 		public float FlareScale = 0.6f;
-		public float MarkerScale = 0.25f;
+		public float JunctionMarkerScale = 0.75f;
 		public float MarkerCutoff = 0.12f;
 
 		public float MapZoomMin = 50f;
@@ -173,11 +173,11 @@ public static class Loader
 			GUILayout.Label("Junction Marker Scale");
 			using (new GUILayout.HorizontalScope())
 			{
-				var ms = (float)Math.Round(GUILayout.HorizontalSlider(Settings.MarkerScale, 0.1f, 0.5f, GUILayout.Width(UnityModManager.UI.Scale(200))), 2, MidpointRounding.AwayFromZero);
+				var ms = (float)Math.Round(GUILayout.HorizontalSlider(Settings.JunctionMarkerScale, 0.50f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))), 2, MidpointRounding.AwayFromZero);
 				GUILayout.Label(ms.ToString(), GUILayout.ExpandWidth(true));
-				if (Settings.MarkerScale != ms)
+				if (Settings.JunctionMarkerScale != ms)
 				{
-					Settings.MarkerScale = ms;
+					Settings.JunctionMarkerScale = ms;
 					changed = true;
 				}
 			}
