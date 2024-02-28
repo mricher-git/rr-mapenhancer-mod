@@ -53,8 +53,9 @@ namespace MapEnhancer
 		void OnEnable()
 		{
 			var windowRectTransform = window._rectTransform;
-			if (windowRectTransform.rect.width > Screen.width || windowRectTransform.rect.height > Screen.height)
-				windowRectTransform.sizeDelta = new Vector2(Screen.width, Screen.height);
+			var parentRectTransform = _rectTransform.parent.GetComponent<RectTransform>();
+			if (windowRectTransform.sizeDelta.x > parentRectTransform.sizeDelta.x || windowRectTransform.sizeDelta.y > parentRectTransform.sizeDelta.y)
+				windowRectTransform.sizeDelta = parentRectTransform.sizeDelta;
 		}
 		
 		new public void OnPointerDown(PointerEventData data)
