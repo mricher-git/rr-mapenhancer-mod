@@ -1,10 +1,4 @@
-using dnlib;
 using MapEnhancer.UMM;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UI.Common;
 using UI.Map;
 using UnityEngine;
@@ -23,7 +17,6 @@ namespace MapEnhancer
 		private AspectRatioFitter aspectRatioFitter;
 		private Vector2 sizeDelta;
 		private Camera mapCamera;
-		private bool doOnce;
 
 		public static MapResizer Create()
 		{
@@ -78,11 +71,21 @@ namespace MapEnhancer
 
 		void UpdateWindowSize()
 		{
-			maxSize = new Vector2(Screen.width, Screen.height);
+			Rect parentRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
+			
+			maxSize = new Vector2(parentRect.max.x - _rectTransform.localPosition.x,
+								  _rectTransform.localPosition.y - parentRect.min.y);
+
 			if ((float)Screen.width / (float)Screen.height < aspect)
+			{
+				maxSize.x = Mathf.Min(maxSize.x, maxSize.y * aspect);
 				aspectRatioFitter.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
+			}
 			else
+			{
+				maxSize.y = Mathf.Min(maxSize.y, maxSize.x / aspect);
 				aspectRatioFitter.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+			}
 		}
 
 		private void AddAspectRatioFilter()
