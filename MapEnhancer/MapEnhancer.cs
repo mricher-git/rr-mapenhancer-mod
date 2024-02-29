@@ -195,7 +195,11 @@ public class MapEnhancer : MonoBehaviour
 		Rebuild();
 		resizer = MapResizer.Create();
 		OnSettingsChanged();
-		MapBuilder.Shared.Rebuild();
+		if (MapWindow.instance._window.IsShown)
+		{
+			MapBuilder.Shared.Rebuild();
+			OnMapWindowShown(true);
+		}
 	}
 
 	private void OnMapWillUnload(MapWillUnloadEvent evt)
@@ -368,18 +372,24 @@ public class MapEnhancer : MonoBehaviour
 	{
 		if (MapState != MapStates.MAPLOADED) return;
 
+		foreach (var junctionMarker in JunctionMarker.junctionMarkerPrefabL.GetComponentsInChildren<CanvasRenderer>(true))
+		{
+			junctionMarker.transform.localScale = Vector3.one * Settings.JunctionMarkerScale;
+		}
+		foreach (var junctionMarker in JunctionMarker.junctionMarkerPrefabR.GetComponentsInChildren<CanvasRenderer>(true))
+		{
+			junctionMarker.transform.localScale = Vector3.one * Settings.JunctionMarkerScale;
+		}
 		foreach (var junctionMarker in Junctions.GetComponentsInChildren<CanvasRenderer>(true))
 		{
-			var rt = junctionMarker.GetComponent<RectTransform>();
-			if (rt != null)
-			{
-				rt.localScale = Vector3.one * Settings.JunctionMarkerScale;
-			}
+			junctionMarker.transform.localScale = Vector3.one * Settings.JunctionMarkerScale;
 		}
 
+		if (_flarePrefab != null)
+			_flarePrefab.GetComponentInChildren<Image>(true).transform.localScale = Vector3.one * Settings.FlareScale;
 		foreach (var flare in FlareManager.Shared._instances.Values)
 		{
-			var icon = flare.GetComponentInChildren<Image>();
+			var icon = flare.GetComponentInChildren<Image>(true);
 			if (icon != null)
 			{
 				icon.transform.localScale = Vector3.one * Settings.FlareScale;
@@ -412,7 +422,6 @@ public class MapEnhancer : MonoBehaviour
 			mapBuilder.mapCamera.orthographicSize =
 				Mathf.Clamp(MapBuilder.Shared.mapCamera.orthographicSize, Settings.MapZoomMin, Settings.MapZoomMax);
 			mapBuilder.UpdateForZoom();
-			OnMapWindowShown(true);
 		}
 	}
 

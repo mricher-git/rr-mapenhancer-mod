@@ -94,6 +94,7 @@ namespace MapEnhancer
 			left.gameObject.name = "Indicator";
 			left.pivot = new Vector2(0.5f, 1f);
 			left.sizeDelta = new Vector2(50f, 50f);
+			left.localScale = Vector3.one * (MapEnhancer.Instance?.Settings.JunctionMarkerScale ?? 0.6f);
 
 			var right = Instantiate(left, junctionMarker.transform);
 			right.gameObject.name = "Indicator";
