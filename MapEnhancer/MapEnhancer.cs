@@ -423,6 +423,7 @@ public class MapEnhancer : MonoBehaviour
 				Mathf.Clamp(MapBuilder.Shared.mapCamera.orthographicSize, Settings.MapZoomMin, Settings.MapZoomMax);
 			mapBuilder.UpdateForZoom();
 		}
+		resizer.SetMinimumSize(Settings.WindowSizeScaleMin);
 	}
 
 	private static Material GetTrackClassMaterial(MapBuilder mapBuilder, int trackClass)

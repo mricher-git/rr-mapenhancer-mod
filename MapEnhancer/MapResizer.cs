@@ -9,14 +9,16 @@ using UnityEngine.UI;
 namespace MapEnhancer
 {
 	[RequireComponent(typeof(Image))]
-	internal class MapResizer : PanelResizer, IPointerDownHandler, IPointerUpHandler, IEventSystemHandler, IDragHandler
+	public class MapResizer : PanelResizer, IPointerDownHandler, IPointerUpHandler, IEventSystemHandler, IDragHandler
 	{
+		private Vector2 originalSize;
 		private float aspect;
 		private Window window;
 		private MapWindow mapWindow;
 		private AspectRatioFitter aspectRatioFitter;
-		private Vector2 sizeDelta;
+		private Vector2 windowMargins;
 		private Camera mapCamera;
+		private Canvas canvas;
 
 		public static MapResizer Create()
 		{
@@ -39,14 +41,19 @@ namespace MapEnhancer
 			mapWindow = GetComponentInParent<MapWindow>();
 			transform.gameObject.SetActive(window.IsShown);
 			mapCamera = MapBuilder.Shared.mapCamera;
+			canvas = GetComponentInParent<Canvas>().rootCanvas;
 
 			var rect = window._rectTransform.rect;
-			minSize = new Vector2(rect.width, rect.height);
+			originalSize = rect.size;
+			minSize = new Vector2(rect.width * .75f, rect.height * .75f);
 			aspect = rect.width / rect.height;
-			sizeDelta = window.InitialContentSize - minSize;
+			windowMargins = originalSize - window.InitialContentSize;
+
+			var scale = MapEnhancer.Instance.Settings.WindowSizeScaleMin;
+			_rectTransform.sizeDelta *= scale;
 
 			AdjustRenderTexture();
-			AddAspectRatioFilter();
+			AddAspectRatioFitter();
 			CreateDragHandle();
 		}
 
@@ -77,7 +84,7 @@ namespace MapEnhancer
 			maxSize = new Vector2(parentRect.max.x - _rectTransform.localPosition.x,
 								  _rectTransform.localPosition.y - parentRect.min.y);
 
-			if ((float)Screen.width / (float)Screen.height < aspect)
+			if (parentRect.width / parentRect.height < aspect)
 			{
 				maxSize.x = Mathf.Min(maxSize.x, maxSize.y * aspect);
 				aspectRatioFitter.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
@@ -89,7 +96,7 @@ namespace MapEnhancer
 			}
 		}
 
-		private void AddAspectRatioFilter()
+		private void AddAspectRatioFitter()
 		{
 			aspectRatioFitter = transform.parent.gameObject.AddComponent<AspectRatioFitter>();
 			aspectRatioFitter.aspectRatio = aspect;
@@ -99,8 +106,8 @@ namespace MapEnhancer
 		private void AdjustRenderTexture()
 		{
 			RenderTexture rt = mapWindow._renderTexture;
-			var height = (int)Mathf.Round(Screen.height + sizeDelta.y);
-			var width = (int)Mathf.Round(Screen.height * aspect + sizeDelta.x);
+			var height = (int)Mathf.Round(canvas.renderingDisplaySize.y - windowMargins.y);
+			var width = (int)Mathf.Round(canvas.renderingDisplaySize.y * aspect - windowMargins.x);
 			if (rt.width != width || rt.height != height)
 			{
 				rt.Release();
@@ -122,10 +129,19 @@ namespace MapEnhancer
 			rect.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Bottom, 4f, 22f);
 		}
 
+		public void SetMinimumSize(float scale)
+		{
+			minSize = originalSize * scale;
+
+			var windowRectTransform = window._rectTransform;
+			if (windowRectTransform.sizeDelta.x < minSize.x || windowRectTransform.sizeDelta.y < minSize.y)
+				windowRectTransform.sizeDelta = minSize;
+		}
+
 		void OnDestroy()
 		{
 			if (aspectRatioFitter) DestroyImmediate(aspectRatioFitter);
-			window._rectTransform.sizeDelta = minSize;
+			window._rectTransform.sizeDelta = originalSize;
 		}
 	}
 }

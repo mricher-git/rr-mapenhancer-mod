@@ -83,6 +83,7 @@ public static class Loader
 		public float JunctionMarkerScale = 0.6f;
 		public float MarkerCutoff = 0.12f;
 
+		public float WindowSizeScaleMin = 1f;
 		public float MapZoomMin = 50f;
 		public float MapZoomMax = 10000f;
 
@@ -132,7 +133,19 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);		
+			GUILayout.Space(5);
+			GUILayout.Label("Minimum Map Window Size");
+			using (new GUILayout.HorizontalScope())
+			{
+				var zoomMin = (float)Math.Round(GUILayout.HorizontalSlider(Settings.WindowSizeScaleMin, .25f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))) * 4, 0, MidpointRounding.AwayFromZero) / 4f;
+				GUILayout.Label(zoomMin.ToString(), GUILayout.ExpandWidth(true));
+				if (Settings.WindowSizeScaleMin != zoomMin)
+				{
+					Settings.WindowSizeScaleMin = zoomMin;
+					changed = true;
+				}
+			}
+
 			GUILayout.Label("Map Zoom Min (lower = more zoom)");
 			using (new GUILayout.HorizontalScope())
 			{
