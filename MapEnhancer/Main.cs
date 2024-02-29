@@ -80,13 +80,13 @@ public static class Loader
 		public bool DoubleClick = false;
 
 		public float FlareScale = 0.6f;
-		public float JunctionMarkerScale = 0.75f;
+		public float JunctionMarkerScale = 0.6f;
 		public float MarkerCutoff = 0.12f;
 
 		public float MapZoomMin = 50f;
-		public float MapZoomMax = 5000f;
+		public float MapZoomMax = 10000f;
 
-		public float TrackLineThickness = 1f;
+		public float TrackLineThickness = 1.25f;
 
 		public MsaaQuality MSAA = MsaaQuality._4x;
 
