@@ -240,7 +240,8 @@ public class MapEnhancer : MonoBehaviour
 
 		if (shown)
 		{
-			traincarColorUpdater = StartCoroutine(TraincarColorUpdater());
+			if (traincarColorUpdater == null)
+				traincarColorUpdater = StartCoroutine(TraincarColorUpdater());
 		}
 		else
 		{
@@ -251,10 +252,9 @@ public class MapEnhancer : MonoBehaviour
 
 	private IEnumerator TraincarColorUpdater()
 	{
-		WaitForSecondsRealtime wait = new WaitForSecondsRealtime(1f);
 		for (;;)
 		{
-			foreach (var marker in MapBuilder.Shared._mapIcons)
+			foreach (var marker in MapBuilder.Shared._mapIcons.ToArray())
 			{
 				if (marker == null || !marker.isActiveAndEnabled) continue;
 
@@ -268,25 +268,27 @@ public class MapEnhancer : MonoBehaviour
 					Vector3 vector;
 					OpsCarPosition opsCarPosition;
 					OpsController opsController = OpsController.Shared;
+					Color color = Color.white;
+
 					if (opsController != null && opsController.TryGetDestinationInfo(car, out text, out flag, out vector, out opsCarPosition))
 					{
 						Area area = opsController.AreaForCarPosition(opsCarPosition);
 
-						Color color = area ? area.tagColor : Color.gray;
+						if (area) color = area.tagColor;
 
 						if (!flag)
 						{
 							var intensity = 1 / color.maxColorComponent;
 							color *= intensity;
 						}
-						marker.GetComponentInChildren<Image>().color = color;
 					}
+					marker.GetComponentInChildren<Image>().color = color;
+					
+					yield return null;
 				}
-
 			}
-			yield return wait;
+			yield return null;
 		}
-		yield break;
 	}
 
 	public void Rebuild()
