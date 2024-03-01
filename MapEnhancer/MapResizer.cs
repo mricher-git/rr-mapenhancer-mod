@@ -1,4 +1,3 @@
-using MapEnhancer.UMM;
 using UI.Common;
 using UI.Map;
 using UnityEngine;
@@ -19,6 +18,9 @@ namespace MapEnhancer
 		private Vector2 windowMargins;
 		private Camera mapCamera;
 		private Canvas canvas;
+		Vector2 largeWindowPos;
+		Vector2 largeWindowSize;
+		private bool isLarge;
 
 		public static MapResizer Create()
 		{
@@ -45,12 +47,15 @@ namespace MapEnhancer
 
 			var rect = window._rectTransform.rect;
 			originalSize = rect.size;
-			minSize = new Vector2(rect.width * .75f, rect.height * .75f);
+			var scale = MapEnhancer.Instance.Settings.WindowSizeMin / 800f;
+			minSize = new Vector2(rect.width * scale, rect.height * scale);
 			aspect = rect.width / rect.height;
 			windowMargins = originalSize - window.InitialContentSize;
 
-			var scale = MapEnhancer.Instance.Settings.WindowSizeScaleMin;
-			_rectTransform.sizeDelta *= scale;
+			_rectTransform.sizeDelta = minSize;
+
+			var canvasRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
+			largeWindowSize = canvasRect.size * 0.75f;
 
 			AdjustRenderTexture();
 			AddAspectRatioFitter();
@@ -74,17 +79,19 @@ namespace MapEnhancer
 		public void OnPointerUp(PointerEventData data)
 		{
 			AdjustRenderTexture();
+			if (isLarge)
+				largeWindowSize = _rectTransform.sizeDelta;
 		}
 
 
 		void UpdateWindowSize()
 		{
-			Rect parentRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
+			Rect canvasRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
 			
-			maxSize = new Vector2(parentRect.max.x - _rectTransform.localPosition.x,
-								  _rectTransform.localPosition.y - parentRect.min.y);
+			maxSize = new Vector2(canvasRect.max.x - _rectTransform.localPosition.x,
+								  _rectTransform.localPosition.y - canvasRect.min.y);
 
-			if (parentRect.width / parentRect.height < aspect)
+			if (canvasRect.width / canvasRect.height < aspect)
 			{
 				maxSize.x = Mathf.Min(maxSize.x, maxSize.y * aspect);
 				aspectRatioFitter.aspectMode = AspectRatioFitter.AspectMode.WidthControlsHeight;
@@ -129,18 +136,48 @@ namespace MapEnhancer
 			rect.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Bottom, 4f, 22f);
 		}
 
-		public void SetMinimumSize(float scale)
+		public void SetMinimumSize(float size)
 		{
-			minSize = originalSize * scale;
+			if (window == null) return;
+			minSize = originalSize * (size/800f);
 
 			var windowRectTransform = window._rectTransform;
-			if (windowRectTransform.sizeDelta.x < minSize.x || windowRectTransform.sizeDelta.y < minSize.y)
-				windowRectTransform.sizeDelta = minSize;
+			//if (windowRectTransform.sizeDelta.x < minSize.x || windowRectTransform.sizeDelta.y < minSize.y)
+			windowRectTransform.sizeDelta = minSize;
+		}
+
+		public void Toggle()
+		{
+			var isShown = window.IsShown;
+			if (!isShown)
+			{
+				window.ShowWindow();
+				isLarge = false;
+			}
+			else
+			{
+				isLarge = !isLarge;
+			}
+
+			if (isLarge)
+			{
+				_rectTransform.anchoredPosition = largeWindowPos;
+				_rectTransform.sizeDelta = largeWindowSize;
+			}
+			else
+			{
+				largeWindowPos = _rectTransform.anchoredPosition;
+				_rectTransform.anchoredPosition = Vector2.zero;
+				_rectTransform.sizeDelta = minSize;
+			}
+			if (isShown)
+				window.ClampToParentBounds();
 		}
 
 		void OnDestroy()
 		{
 			if (aspectRatioFitter) DestroyImmediate(aspectRatioFitter);
+			window._rectTransform.anchoredPosition = Vector2.zero;
 			window._rectTransform.sizeDelta = originalSize;
 		}
 	}

@@ -423,7 +423,7 @@ public class MapEnhancer : MonoBehaviour
 				Mathf.Clamp(MapBuilder.Shared.mapCamera.orthographicSize, Settings.MapZoomMin, Settings.MapZoomMax);
 			mapBuilder.UpdateForZoom();
 		}
-		resizer.SetMinimumSize(Settings.WindowSizeScaleMin);
+		resizer.SetMinimumSize(Settings.WindowSizeMin);
 	}
 
 	private static Material GetTrackClassMaterial(MapBuilder mapBuilder, int trackClass)
@@ -576,6 +576,11 @@ public class MapEnhancer : MonoBehaviour
 	void Update()
 	{
 		if (MapState != MapStates.MAPLOADED) return;
+
+		if (GameInput.shared._gameActionMap.enabled && Settings.mapToggle.Down())
+		{
+			resizer.Toggle();
+		}
 
 		var mapWindow = MapWindow.instance;
 		var mapDrag = MapWindow.instance.mapDrag;

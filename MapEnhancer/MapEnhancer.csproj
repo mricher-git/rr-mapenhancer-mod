@@ -43,6 +43,7 @@
 		<Reference Include="UnityEngine.UIModule" />
 		<Reference Include="UnityEngine.ImageConversionModule" />
 		<Reference Include="UnityEngine.InputLegacyModule" />
+		<Reference Include="Unity.InputSystem" />
 		<Reference Include="Unity.RenderPipelines.Universal.Runtime" />
 		<Reference Include="Unity.TextMeshPro" />
 	</ItemGroup>

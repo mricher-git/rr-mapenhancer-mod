@@ -77,13 +77,15 @@ public static class Loader
 
 	public class MapEnhancerSettings : UnityModManager.ModSettings
 	{
+		public KeyBinding mapToggle = new KeyBinding() { keyCode = KeyCode.Z};
+
 		public bool DoubleClick = false;
 
 		public float FlareScale = 0.6f;
 		public float JunctionMarkerScale = 0.6f;
 		public float MarkerCutoff = 0.12f;
 
-		public float WindowSizeScaleMin = 1f;
+		public float WindowSizeMin = 800f;
 		public float MapZoomMin = 50f;
 		public float MapZoomMax = 10000f;
 
@@ -133,19 +135,23 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);
-			GUILayout.Label("Minimum Map Window Size");
+			GUILayout.Space(UnityModManager.UI.Scale(5));
+			GUILayout.Label("Toggle Map Size Keybind");
+			UnityModManager.UI.DrawKeybindingSmart(Settings.mapToggle, "Toggle Map Size", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
+
+			GUILayout.Label("Docked Map Window Size");
 			using (new GUILayout.HorizontalScope())
 			{
-				var zoomMin = (float)Math.Round(GUILayout.HorizontalSlider(Settings.WindowSizeScaleMin, .25f, 1f, GUILayout.Width(UnityModManager.UI.Scale(200))) * 4, 0, MidpointRounding.AwayFromZero) / 4f;
+				var zoomMin = (float)Math.Round(GUILayout.HorizontalSlider(Settings.WindowSizeMin, 200f, 800f, GUILayout.Width(UnityModManager.UI.Scale(200))) / 200, 0, MidpointRounding.AwayFromZero) * 200f;
 				GUILayout.Label(zoomMin.ToString(), GUILayout.ExpandWidth(true));
-				if (Settings.WindowSizeScaleMin != zoomMin)
+				if (Settings.WindowSizeMin != zoomMin)
 				{
-					Settings.WindowSizeScaleMin = zoomMin;
+					Settings.WindowSizeMin = zoomMin;
 					changed = true;
 				}
 			}
 
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Map Zoom Min (lower = more zoom)");
 			using (new GUILayout.HorizontalScope())
 			{
@@ -170,7 +176,7 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Fusee Marker Scale");
 			using (new GUILayout.HorizontalScope())
 			{
@@ -195,6 +201,7 @@ public static class Loader
 				}
 			}
 
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Junction Non-Mainline Marker Cutoff");
 			using (new GUILayout.HorizontalScope())
 			{
@@ -207,7 +214,7 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Track Line Thickness");
 			using (new GUILayout.HorizontalScope())
 			{
@@ -220,13 +227,13 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Map Window Antialiasing");
 			using (new GUILayout.HorizontalScope())
 			{
 				var values = (int[])Enum.GetValues(Settings.MSAA.GetType());
 				int msaaIndex = Array.IndexOf(values, Settings.MSAA);
-				if (UnityModManager.UI.PopupToggleGroup(ref msaaIndex, Enum.GetNames(Settings.MSAA.GetType()), null, GUILayout.ExpandWidth(false)))
+				if (UnityModManager.UI.PopupToggleGroup(ref msaaIndex, Enum.GetNames(Settings.MSAA.GetType()), null, GUILayout.Width(UnityModManager.UI.Scale(100))))
 				{
 					if (values[msaaIndex] != (int)Settings.MSAA)
 					{
@@ -236,7 +243,7 @@ public static class Loader
 				}
 			}
 
-			GUILayout.Space(5);
+			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Mainline Track Color");
 			if (DrawColor(ref Settings.TrackColorMainline)) changed = true;
 			GUILayout.Label("Branch/Yard Track Color");
