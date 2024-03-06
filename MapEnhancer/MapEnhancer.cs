@@ -359,7 +359,7 @@ public class MapEnhancer : MonoBehaviour
 			else
 				junctionMarker.transform.SetParent(JunctionsBranch.transform, false);
 			junctionMarkers.Add(new Entry(sd, junctionMarker));
-			junctionMarker.transform.localPosition = sd.geometry.switchHome + Vector3.up * 50f;
+			junctionMarker.transform.localPosition = sd.geometry.switchHome + Vector3.up * 2000f;
 			junctionMarker.transform.localRotation = sd.geometry.aPointRail.Points.First().Rotation;
 			JunctionMarker jm = sd.geometry.aPointRail.hand == Hand.Right ?
 				JunctionMarker.junctionMarkerPrefabL :
@@ -567,7 +567,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		var mapIcon = Instantiate<MapIcon>(flarePrefab, flare.transform.parent);
 		var posRot = flare.transform.parent.parent.GetComponent<TrackMarker>().PositionRotation;
-		mapIcon.transform.localPosition = mapIcon.transform.localPosition + Vector3.up * 25f;
+		mapIcon.transform.localPosition = mapIcon.transform.localPosition + Vector3.up * 1000f;
 		mapIcon.transform.rotation = Quaternion.Euler(90f, posRot.Value.Rotation.eulerAngles.y, 0f);
 		mapIcon.OnClick = delegate
 		{
@@ -776,9 +776,9 @@ public class MapEnhancer : MonoBehaviour
 				return false;
 			}
 			if (__instance.Archetype.IsLocomotive())
-				return true;
-			
-			__instance.MapIcon.transform.SetPositionAndRotation(position + Vector3.up * 75f, Quaternion.Euler(-90f, rotation.eulerAngles.y, 0f));
+				__instance.MapIcon.transform.SetPositionAndRotation(position + Vector3.up * 4000f, Quaternion.Euler(-90f, rotation.eulerAngles.y, 0f));
+			else
+				__instance.MapIcon.transform.SetPositionAndRotation(position + Vector3.up * 3000f, Quaternion.Euler(-90f, rotation.eulerAngles.y, 0f));
 			return false;
 		}
 	}
