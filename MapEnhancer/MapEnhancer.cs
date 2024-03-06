@@ -25,6 +25,7 @@ using UI;
 using UI.CarInspector;
 using UI.Map;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace MapEnhancer;
@@ -192,6 +193,8 @@ public class MapEnhancer : MonoBehaviour
 		var worldPos = WorldTransformer.GameToWorld(new Vector3(0, 0, 0));
 		Junctions.transform.position = worldPos;
 
+		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.Off;
+
 		Rebuild();
 		resizer = MapResizer.Create();
 		OnSettingsChanged();
@@ -223,6 +226,8 @@ public class MapEnhancer : MonoBehaviour
 
 		if (resizer)
 			DestroyImmediate(resizer.gameObject);
+
+		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.On;
 	}
 
 	private void WorldDidMove(WorldDidMoveEvent evt)

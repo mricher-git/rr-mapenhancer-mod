@@ -125,6 +125,16 @@ namespace MapEnhancer
 			}
 		}
 
+		private void CleanupRenderTexture()
+		{
+			Rect rect = window.contentRectTransform.rect;
+			RenderTexture rt = mapWindow._renderTexture;
+			rt.Release();
+			rt.width = (int)rect.width;
+			rt.height = (int)rect.height;
+			rt.antiAliasing = 1;
+		}
+
 		private void CreateDragHandle()
 		{
 			var image = transform.GetComponent<Image>();
@@ -141,9 +151,11 @@ namespace MapEnhancer
 			if (window == null) return;
 			minSize = originalSize * (size/800f);
 
+			if (!isLarge)
+			{
 			var windowRectTransform = window._rectTransform;
-			//if (windowRectTransform.sizeDelta.x < minSize.x || windowRectTransform.sizeDelta.y < minSize.y)
 			windowRectTransform.sizeDelta = minSize;
+		}
 		}
 
 		public void Toggle()
