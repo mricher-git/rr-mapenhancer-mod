@@ -15,6 +15,7 @@ namespace MapEnhancer
 		private Window window;
 		private MapWindow mapWindow;
 		private AspectRatioFitter aspectRatioFitter;
+		private ResizeNotifier notifier;
 		private Vector2 windowMargins;
 		private Camera mapCamera;
 		private Canvas canvas;
@@ -57,6 +58,9 @@ namespace MapEnhancer
 			var canvasRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
 			largeWindowSize = canvasRect.size * 0.75f;
 
+			notifier = canvas.gameObject.AddComponent<ResizeNotifier>();
+			notifier.RectTransformDimensionsChanged += OnRectCanvasTransformChanged;
+
 			AdjustRenderTexture();
 			AddAspectRatioFitter();
 			CreateDragHandle();
@@ -78,7 +82,6 @@ namespace MapEnhancer
 
 		public void OnPointerUp(PointerEventData data)
 		{
-			AdjustRenderTexture();
 			if (isLarge)
 				largeWindowSize = _rectTransform.sizeDelta;
 		}
@@ -135,6 +138,11 @@ namespace MapEnhancer
 			rt.antiAliasing = 1;
 		}
 
+		private void OnRectCanvasTransformChanged(RectTransform transform)
+		{
+			AdjustRenderTexture();
+		}
+
 		private void CreateDragHandle()
 		{
 			var image = transform.GetComponent<Image>();
@@ -153,9 +161,9 @@ namespace MapEnhancer
 
 			if (!isLarge)
 			{
-			var windowRectTransform = window._rectTransform;
-			windowRectTransform.sizeDelta = minSize;
-		}
+				var windowRectTransform = window._rectTransform;
+				windowRectTransform.sizeDelta = minSize;
+			}
 		}
 
 		public void Toggle()
@@ -191,6 +199,9 @@ namespace MapEnhancer
 			if (aspectRatioFitter) DestroyImmediate(aspectRatioFitter);
 			window._rectTransform.anchoredPosition = Vector2.zero;
 			window._rectTransform.sizeDelta = originalSize;
+
+			if (notifier) DestroyImmediate(notifier);
+			CleanupRenderTexture();
 		}
 	}
 }
