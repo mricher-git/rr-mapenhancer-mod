@@ -2,10 +2,10 @@
 	"Id": "MapEnhancer",
 	"DisplayName": "Map Enhancer",
 	"Author": "Vanguard",
-	"Version": "1.3.0",
+	"Version": "1.3.1",
 	"AssemblyName": "MapEnhancer.dll",
 	"EntryMethod": "MapEnhancer.UMM.Loader.Load",
-	"ManagerVersion": "0.27.8",
+	"ManagerVersion": "0.27.10",
 	"HomePage": "https://www.nexusmods.com/railroader/mods/18/",
 	"Repository": "https://raw.githubusercontent.com/mricher-git/rr-mapenhancer-mod/master/repository.json"
 }
