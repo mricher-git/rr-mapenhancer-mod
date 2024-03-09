@@ -187,6 +187,8 @@ public class MapEnhancer : MonoBehaviour
 		MapWindow.instance._window.OnShownDidChange += OnMapWindowShown;
 
 		GatherTraincarMarkers();
+		traincarColorUpdater = StartCoroutine(TraincarColorUpdater());
+
 		GatherFlareMarkers();
 
 		Messenger.Default.Register<WorldDidMoveEvent>(this, new Action<WorldDidMoveEvent>(this.WorldDidMove));
@@ -242,17 +244,6 @@ public class MapEnhancer : MonoBehaviour
 	private void OnMapWindowShown(bool shown)
 	{
 		Junctions?.SetActive(shown);
-
-		if (shown)
-		{
-			if (traincarColorUpdater == null)
-				traincarColorUpdater = StartCoroutine(TraincarColorUpdater());
-		}
-		else
-		{
-			if (traincarColorUpdater != null) StopCoroutine(traincarColorUpdater);
-			traincarColorUpdater = null;
-		}
 	}
 
 	private IEnumerator TraincarColorUpdater()

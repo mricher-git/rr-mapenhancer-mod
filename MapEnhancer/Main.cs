@@ -22,7 +22,7 @@ public static class Loader
 	{
 		if (ModEntry != null || Instance != null)
 		{
-			modEntry.Logger.Warning("Utilities is already loaded!");
+			modEntry.Logger.Warning("MapEnhancer is already loaded!");
 			return false;
 		}
 
