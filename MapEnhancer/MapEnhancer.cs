@@ -443,8 +443,11 @@ public class MapEnhancer : MonoBehaviour
 		var sprite = LoadTexture("traincar.png", "MapTraincarIcon");
 		foreach (var mapIcon in Resources.FindObjectsOfTypeAll<MapIcon>().Where(MapIcon => MapIcon.name.StartsWith("Map Icon Locomotive")))
 		{
-			mapIcon.transform.Find("Image").localScale = new Vector3(0.8f, 0.8f, 0.8f);
-			mapIcon.transform.Find("Text").transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+			var image = mapIcon.transform.Find("Image");
+			image.localScale = new Vector3(0.8f, 0.8f, 0.8f);
+			DestroyImmediate(image.GetComponent<Collider>());
+			image.gameObject.AddComponent<BoxCollider>().size = new Vector3(40f, 92f, 1f);
+			mapIcon.Text.transform.localScale = new Vector3(0.8f, 0.8f, 0.8f);
 		}
 		_traincarPrefab = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, prefabHolder.transform);
 		GameObject trainCarMarker = _traincarPrefab.gameObject;
