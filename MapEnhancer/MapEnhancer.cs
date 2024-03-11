@@ -919,4 +919,21 @@ public class MapEnhancer : MonoBehaviour
 			return true;
 		}
 	}
+
+	[HarmonyPatch(typeof(MapIcon), nameof(MapIcon.FixTextRotation))]
+	public static class FixTextRotationPatch
+	{
+		private static bool Prefix(TMP_Text ____text)
+		{
+			if (____text != null)
+			{
+				float num = Mathf.DeltaAngle(____text.transform.rotation.eulerAngles.y, 180f);
+				if (-90f < num && num < 90f)
+				{
+					____text.transform.localRotation = Quaternion.Euler(____text.transform.localRotation.eulerAngles + new Vector3(0f, 0f, 180f));
+				}
+			}
+			return false;
+		}
+	}
 }
