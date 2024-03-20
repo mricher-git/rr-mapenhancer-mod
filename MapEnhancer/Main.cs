@@ -78,6 +78,7 @@ public static class Loader
 	public class MapEnhancerSettings : UnityModManager.ModSettings
 	{
 		public KeyBinding mapToggle = new KeyBinding() { keyCode = KeyCode.Z};
+		public KeyBinding mapFollow = new KeyBinding() { modifiers = 1, keyCode = KeyCode.Z };
 
 		public bool DoubleClick = false;
 
@@ -138,6 +139,8 @@ public static class Loader
 			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Toggle Map Size Keybind");
 			UnityModManager.UI.DrawKeybindingSmart(Settings.mapToggle, "Toggle Map Size", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
+			GUILayout.Label("Follow Mode Keybind");
+			UnityModManager.UI.DrawKeybindingSmart(Settings.mapFollow, "Follow Mode will keep map focuesed on last selected loco", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
 
 			GUILayout.Label("Docked Map Window Size");
 			using (new GUILayout.HorizontalScope())

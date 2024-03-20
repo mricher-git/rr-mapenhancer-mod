@@ -22,6 +22,7 @@ using TMPro;
 using Track;
 using Track.Signals;
 using UI;
+using UI.Builder;
 using UI.CarInspector;
 using UI.Map;
 using UnityEngine;
@@ -42,6 +43,8 @@ public class MapEnhancer : MonoBehaviour
 	private CullingGroup cullingGroup;
 	private BoundingSphere[] cullingSpheres;
 	private MapResizer resizer;
+	private bool mapFollowMode;
+	private Car? lastInspectedCar;
 
 	// Holder stops "prefab" from going active immediately
 	private static GameObject _prefabHolder;
@@ -230,6 +233,8 @@ public class MapEnhancer : MonoBehaviour
 			DestroyImmediate(resizer.gameObject);
 
 		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.On;
+
+		if (mapSettings) Destroy(mapSettings.gameObject);
 	}
 
 	private void WorldDidMove(WorldDidMoveEvent evt)
@@ -241,9 +246,27 @@ public class MapEnhancer : MonoBehaviour
 		UpdateCullingSpheres();
 	}
 
+	public RectTransform mapSettings;
 	private void OnMapWindowShown(bool shown)
 	{
 		Junctions?.SetActive(shown);
+
+		if (shown && mapSettings == null)
+		{
+			var settingsGo = new GameObject("Map Settings", typeof(RectTransform));
+			mapSettings = settingsGo.GetComponent<RectTransform>();
+			mapSettings.SetParent(MapWindow.instance._window.transform);
+			mapSettings.anchorMin = Vector3.one;
+			mapSettings.anchorMax = Vector3.one;
+			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
+			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 180);
+			
+			UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, (builder) =>
+			{
+				builder.AddField("Follow Mode", builder.AddToggle(() => mapFollowMode, (x) => mapFollowMode = x));
+			});
+			settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
+		}
 	}
 
 	private IEnumerator TraincarColorUpdater()
@@ -492,7 +515,13 @@ public class MapEnhancer : MonoBehaviour
 	{
 		foreach (Car car in TrainController.Shared.Cars)
 		{
-			if (!car.Archetype.IsLocomotive())
+			if (car.Archetype.IsLocomotive())
+			{
+				var marker = car.GetComponentInChildren<MapIcon>();
+				void OnClick() { if (Instance == null) marker.OnClick -= OnClick; lastInspectedCar = car; }
+				marker.OnClick += OnClick;
+			}
+			else
 			{
 				var marker = car.GetComponentInChildren<MapIcon>();
 				if (!marker)
@@ -536,6 +565,7 @@ public class MapEnhancer : MonoBehaviour
 
 		car.MapIcon.OnClick = delegate
 		{
+			if (Instance) Instance.lastInspectedCar = car;
 			CarInspector.Show(car);
 		};
 		car.UpdateMapIconPosition(car._mover.Position, car._mover.Rotation);
@@ -574,18 +604,42 @@ public class MapEnhancer : MonoBehaviour
 		};
 	}
 
-	void Update()
+	void LateUpdate()
 	{
 		if (MapState != MapStates.MAPLOADED) return;
 
-		if (GameInput.shared._gameActionMap.enabled && Settings.mapToggle.Down())
+		var mapCamera = MapBuilder.Shared.mapCamera;
+
+		if (GameInput.shared._gameActionMap.enabled)
 		{
+			if (Settings.mapToggle.Down())
+			{
 			resizer.Toggle();
+				return;
+			}
+			else if (Settings.mapFollow.Down())
+			{
+				mapFollowMode = !mapFollowMode;
+		}
+		}
+
+		if (mapFollowMode == true)
+		{
+			var car = lastInspectedCar;
+			if (car != null)
+			{
+				Vector3 position = WorldTransformer.GameToWorld(Vector3.Lerp(car.LastBodyPosition[0], car.LastBodyPosition[1], 0.5f));
+
+				position.y = mapCamera.transform.position.y;
+				mapCamera.transform.position = position;
+			}
 		}
 
 		var mapWindow = MapWindow.instance;
 		var mapDrag = MapWindow.instance.mapDrag;
-		if (!MapWindow.instance.mapDrag._pointerOver || !GameInput.IsMouseOverGameWindow(mapWindow._window)) return;
+		if (mapDrag._isDragging) lastInspectedCar = null;
+
+		if (!mapDrag._pointerOver || !GameInput.IsMouseOverGameWindow(mapWindow._window)) return;
 
 		if (GameInput.shared.PlaceFlare)
 		{
@@ -762,6 +816,27 @@ public class MapEnhancer : MonoBehaviour
 		private static void Postfix(Car __instance)
 		{
 			AddTraincarMarker(__instance);
+		}
+	}
+
+	[HarmonyPatch(typeof(BaseLocomotive), nameof(Car.FinishSetup))]
+	private static class BaseLocomotiveFinishSetupPatch
+	{
+		private static void Postfix(Car __instance)
+		{
+			var marker = __instance.GetComponentInChildren<MapIcon>();
+			void OnClick()
+			{
+				if (Instance == null)
+				{
+					marker.OnClick -= OnClick;
+				}
+				else
+				{
+					Instance.lastInspectedCar = __instance;
+				}
+			}
+			marker.OnClick += OnClick;
 		}
 	}
 
