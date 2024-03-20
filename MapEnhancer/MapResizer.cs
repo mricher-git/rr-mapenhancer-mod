@@ -168,7 +168,13 @@ namespace MapEnhancer
 
 		public void Toggle()
 		{
-			var isShown = window.IsShown;
+			if (window == null)
+			{
+				MapWindow.Show();
+				return;
+			}
+
+			var isShown = window!.IsShown;
 			if (!isShown)
 			{
 				window.ShowWindow();
