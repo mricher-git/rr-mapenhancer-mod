@@ -79,6 +79,7 @@ public static class Loader
 	{
 		public KeyBinding mapToggle = new KeyBinding() { keyCode = KeyCode.Z};
 		public KeyBinding mapFollow = new KeyBinding() { modifiers = 1, keyCode = KeyCode.Z };
+		public KeyBinding mapRecenter = new KeyBinding() { modifiers = 2, keyCode = KeyCode.Z };
 
 		public bool DoubleClick = false;
 
@@ -139,6 +140,8 @@ public static class Loader
 			GUILayout.Space(UnityModManager.UI.Scale(5));
 			GUILayout.Label("Toggle Map Size Keybind");
 			UnityModManager.UI.DrawKeybindingSmart(Settings.mapToggle, "Toggle Map Size", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
+			GUILayout.Label("Re-center Map on Player Keybind");
+			UnityModManager.UI.DrawKeybindingSmart(Settings.mapRecenter, "Re-center map to currently selected camera", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
 			GUILayout.Label("Follow Mode Keybind");
 			UnityModManager.UI.DrawKeybindingSmart(Settings.mapFollow, "Follow Mode will keep map focuesed on last selected loco", null, GUILayout.Width(UnityModManager.UI.Scale(200)));
 

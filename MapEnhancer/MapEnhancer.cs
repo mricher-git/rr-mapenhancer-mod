@@ -614,13 +614,20 @@ public class MapEnhancer : MonoBehaviour
 		{
 			if (Settings.mapToggle.Down())
 			{
-			resizer.Toggle();
+				resizer.Toggle();
 				return;
 			}
 			else if (Settings.mapFollow.Down())
 			{
 				mapFollowMode = !mapFollowMode;
-		}
+			}
+			else if (Settings.mapRecenter.Down())
+			{
+				lastInspectedCar = null;
+				Vector3 currentCameraPosition = CameraSelector.shared.CurrentCameraPosition;
+				currentCameraPosition.y = 5000f;
+				mapCamera.transform.localPosition = currentCameraPosition;
+			}
 		}
 
 		if (mapFollowMode == true)
