@@ -1,3 +1,4 @@
+using Character;
 using Core;
 using GalaSoft.MvvmLight.Messaging;
 using Game;
@@ -24,6 +25,7 @@ using Track.Signals;
 using UI;
 using UI.Builder;
 using UI.CarInspector;
+using UI.Console.Commands;
 using UI.Map;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -45,6 +47,38 @@ public class MapEnhancer : MonoBehaviour
 	private MapResizer resizer;
 	private bool mapFollowMode;
 	private Car? lastInspectedCar;
+	public RectTransform mapSettings;
+	private Sprite dropdownSprite;
+	private List<TMP_Dropdown.OptionData> _teleportLocations;
+	private List<TMP_Dropdown.OptionData> teleportLocations
+	{
+		get
+		{
+			if (_teleportLocations == null)
+			{
+				_teleportLocations = new List<TMP_Dropdown.OptionData>() { new TMP_Dropdown.OptionData("Jump...") };
+				var areas = OpsController.Shared.Areas;
+				Dictionary<string, Color> locationColorLookup = new Dictionary<string, Color>();
+				locationColorLookup = SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp =>
+				{
+					var area = OpsController.Shared.ClosestAreaForGamePosition(sp.GamePositionRotation.Item1);
+					var color = area ? area.tagColor : Color.grey;
+					return new { sp.name, color };
+				}).ToDictionary(kvp => kvp.name, kvp => kvp.color);
+
+				var tex = new Texture2D(20, 20);
+				dropdownSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector3.zero);
+				_teleportLocations.AddRange(SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp => new TMP_Dropdown.OptionData(sp.name, dropdownSprite, locationColorLookup[sp.name])).OrderBy(sp =>
+				{
+					float h, s, v;
+					Color.RGBToHSV(sp.color, out h, out s, out v);
+
+					return h;
+				}));
+			}
+			return _teleportLocations;
+		}
+	}
 
 	// Holder stops "prefab" from going active immediately
 	private static GameObject _prefabHolder;
@@ -235,6 +269,12 @@ public class MapEnhancer : MonoBehaviour
 		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.On;
 
 		if (mapSettings) Destroy(mapSettings.gameObject);
+		if (_teleportLocations != null)
+		{
+			Destroy(dropdownSprite.texture);
+			Destroy(dropdownSprite);
+			_teleportLocations = null;
+		}
 	}
 
 	private void WorldDidMove(WorldDidMoveEvent evt)
@@ -246,7 +286,6 @@ public class MapEnhancer : MonoBehaviour
 		UpdateCullingSpheres();
 	}
 
-	public RectTransform mapSettings;
 	private void OnMapWindowShown(bool shown)
 	{
 		Junctions?.SetActive(shown);
@@ -259,11 +298,38 @@ public class MapEnhancer : MonoBehaviour
 			mapSettings.anchorMin = Vector3.one;
 			mapSettings.anchorMax = Vector3.one;
 			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
-			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 180);
+			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 140);
 			
 			UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, (builder) =>
 			{
+				builder.FieldLabelWidth = 100f;
 				builder.AddField("Follow Mode", builder.AddToggle(() => mapFollowMode, (x) => mapFollowMode = x));
+				TMP_Dropdown? dropdown = null;
+				dropdown = builder.AddDropdown(teleportLocations.Select(l=>l.text).ToList(), 0, (index) =>
+				{
+					SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
+					if (spawnPoint != null && index != 0)
+					{
+						ValueTuple<Vector3, Quaternion> gamePositionRotation = spawnPoint.GamePositionRotation;
+						Vector3 item = gamePositionRotation.Item1;
+						item.y = 5000f;
+						MapBuilder.Shared.mapCamera.transform.position = WorldTransformer.GameToWorld(item);
+						dropdown!.SetValueWithoutNotify(0);
+					}
+				}).GetComponent<TMP_Dropdown>();
+				dropdown.template.sizeDelta = new Vector2(0f, teleportLocations.Count * 20f + 8f);
+				var go = new GameObject("Item Image");
+				go.transform.SetParent(dropdown.template.transform.Find("Viewport/Content/Item"), false);
+				var image = go.AddComponent<Image>();
+				var rectTransform = image.rectTransform;
+				rectTransform.anchorMin = new Vector2(1, 0);
+				rectTransform.anchorMax = new Vector2(1, 1);
+				rectTransform.pivot = new Vector2(1, 0.5f);
+				rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 15);
+				rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 15);
+				dropdown.itemImage = image;
+				dropdown.ClearOptions();
+				dropdown.AddOptions(teleportLocations);
 			});
 			settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
 		}
