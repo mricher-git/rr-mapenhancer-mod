@@ -315,44 +315,65 @@ public class MapEnhancer : MonoBehaviour
 
 		if (shown && mapSettings == null)
 		{
-			var settingsGo = new GameObject("Map Settings", typeof(RectTransform));
-			mapSettings = settingsGo.GetComponent<RectTransform>();
-			mapSettings.SetParent(MapWindow.instance._window.transform, false);
-			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
-			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 140);
-			
-			UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, (builder) =>
+			CreateMapSettings();
+		}
+	}
+
+	private void CreateMapSettings()
+	{
+		var settingsGo = new GameObject("Map Settings", typeof(RectTransform));
+		mapSettings = settingsGo.GetComponent<RectTransform>();
+		mapSettings.SetParent(MapWindow.instance._window.transform, false);
+		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
+		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 140);
+
+		var panel = UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, builder =>
+		{
+			builder.FieldLabelWidth = 100f;
+			builder.AddField("Follow Mode", builder.AddToggle(() => mapFollowMode, (x) => mapFollowMode = x));
+			TMP_Dropdown? dropdown = null;
+			dropdown = builder.AddDropdown(teleportLocations, 0, (index) =>
 			{
-				builder.FieldLabelWidth = 100f;
-				builder.AddField("Follow Mode", builder.AddToggle(() => mapFollowMode, (x) => mapFollowMode = x));
-				TMP_Dropdown? dropdown = null;
-				dropdown = builder.AddDropdown(teleportLocations.Select(l=>l.text).ToList(), 0, (index) =>
+				SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
+				if (spawnPoint != null && index != 0)
 				{
-					SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
-					if (spawnPoint != null && index != 0)
-					{
-						ValueTuple<Vector3, Quaternion> gamePositionRotation = spawnPoint.GamePositionRotation;
-						Vector3 item = gamePositionRotation.Item1;
-						item.y = 5000f;
-						MapBuilder.Shared.mapCamera.transform.position = WorldTransformer.GameToWorld(item);
-						dropdown!.SetValueWithoutNotify(0);
-					}
-				}).GetComponent<TMP_Dropdown>();
-				dropdown.template.sizeDelta = new Vector2(0f, teleportLocations.Count * 20f + 8f);
-				var go = new GameObject("Item Image");
-				go.transform.SetParent(dropdown.template.transform.Find("Viewport/Content/Item"), false);
-				var image = go.AddComponent<Image>();
-				var rectTransform = image.rectTransform;
-				rectTransform.anchorMin = new Vector2(1, 0);
-				rectTransform.anchorMax = new Vector2(1, 1);
-				rectTransform.pivot = new Vector2(1, 0.5f);
-				rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 15);
-				rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 15);
-				dropdown.itemImage = image;
-				dropdown.ClearOptions();
-				dropdown.AddOptions(teleportLocations);
-			});
-			settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
+					var mapCamera = MapBuilder.Shared.mapCamera.transform;
+					ValueTuple<Vector3, Quaternion> gamePositionRotation = spawnPoint.GamePositionRotation;
+					Vector3 item = gamePositionRotation.Item1;
+					item.y = mapCamera.position.y;
+					mapCamera.position = WorldTransformer.GameToWorld(item);
+					dropdown!.SetValueWithoutNotify(0);
+				}
+			}).GetComponent<TMP_Dropdown>();
+
+			AddLocoSelectorDropdown(builder);
+		});
+		settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
+
+		void AddLocoSelectorDropdown(UIPanelBuilder builder)
+		{
+			RectTransform rectTransform = builder.CreateRectView("DropDown", 0, 0);
+
+			TMP_Dropdown? dropdown = null;
+			var mapCamera = MapBuilder.Shared.mapCamera.transform;
+			var locoList = TrainController.Shared.Cars.Where((Car car) => car.IsLocomotive).OrderBy(car => car.SortName).ToList();
+			dropdown = builder.AddDropdown(new List<string>() { "Locomotive..." }, 0, index =>
+			{
+				if (index == 0) return;
+				var cars = dropdown!.GetComponent<DropdownClickHandler>().cars;
+				var car = cars[index - 1];
+				if (car == null) return;
+
+				var position = WorldTransformer.GameToWorld(car.GetCenterPosition(Graph.Shared));
+				position.y = mapCamera.position.y;
+				mapCamera.position = position;
+				dropdown!.SetValueWithoutNotify(0);
+				lastInspectedCar = car;
+				MapWindow.instance.mapDrag._isDragging = false;
+			}).GetComponent<TMP_Dropdown>();
+			dropdown.gameObject.AddComponent<DropdownClickHandler>();
+
+			dropdown.template.sizeDelta = new Vector2(0f, 15 * 20f + 8f);
 		}
 	}
 
@@ -450,7 +471,6 @@ public class MapEnhancer : MonoBehaviour
 	private void CreateSwitches()
 	{
 		Loader.LogDebug("CreateSwitches");
-		//foreach (var jm in Junctions.GetComponentsInChildren<JunctionMarker>()) Destroy(jm.transform.parent.gameObject);
 		foreach (var jm in junctionMarkers) Destroy(jm.JunctionMarker);
 		junctionMarkers.Clear();
 		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
@@ -772,8 +792,6 @@ public class MapEnhancer : MonoBehaviour
 		List<Location> locations = new List<Location>();
 		foreach (TrackSegment trackSegment in Graph.Shared.segments.Values)
 		{
-			//if (Vector3.Magnitude(trackSegment.Curve.EndPoint1 - gamePosition) > 1000f) continue;
-
 			Location? result = Graph.Shared.LocationFromPoint(trackSegment, gamePosition, radius);
 			if (result.HasValue && result.Value.IsValid)
 			{
@@ -942,14 +960,19 @@ public class MapEnhancer : MonoBehaviour
 			{
 				if (Instance == null)
 				{
-					marker.OnClick -= OnClick;
+					marker.OnClick = delegate { CarPickable.HandleClick(__instance); };
+					CarPickable.HandleClick(__instance);
+					return;
 				}
-				else
-				{
-					Instance.lastInspectedCar = __instance;
-				}
+
+				Instance.lastInspectedCar = __instance;
+
+				if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = __instance;
+				if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(__instance);
+
+				CarInspector.Show(__instance);
 			}
-			marker.OnClick += OnClick;
+			marker.OnClick = OnClick;
 		}
 	}
 
@@ -1126,5 +1149,33 @@ public class MapEnhancer : MonoBehaviour
 			}
 			return false;
 		}
+	}
+}
+
+public static class Extensions
+{
+	public static RectTransform AddDropdown(this UIPanelBuilder builder, List<TMP_Dropdown.OptionData> options, int currentSelectedIndex, Action<int> onSelect)
+	{
+		TMP_Dropdown tmp_Dropdown = builder.InstantiateInContainer<TMP_Dropdown>(builder._assets.dropdownControl);
+		tmp_Dropdown.ClearOptions();
+		tmp_Dropdown.AddOptions(options);
+		tmp_Dropdown.value = currentSelectedIndex;
+		tmp_Dropdown.onValueChanged.AddListener(delegate (int index)
+		{
+			onSelect(index);
+		});
+
+		tmp_Dropdown.template.sizeDelta = new Vector2(0f, options.Count * 20f + 8f);
+		var go = new GameObject("Item Image");
+		go.transform.SetParent(tmp_Dropdown.template.transform.Find("Viewport/Content/Item"), false);
+		var image = go.AddComponent<Image>();
+		var rectTransform = image.rectTransform;
+		rectTransform.anchorMin = new Vector2(1, 0);
+		rectTransform.anchorMax = new Vector2(1, 1);
+		rectTransform.pivot = new Vector2(1, 0.5f);
+		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 15);
+		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 15);
+		tmp_Dropdown.itemImage = image;
+		return tmp_Dropdown.GetComponent<RectTransform>();
 	}
 }
