@@ -294,9 +294,7 @@ public class MapEnhancer : MonoBehaviour
 		{
 			var settingsGo = new GameObject("Map Settings", typeof(RectTransform));
 			mapSettings = settingsGo.GetComponent<RectTransform>();
-			mapSettings.SetParent(MapWindow.instance._window.transform);
-			mapSettings.anchorMin = Vector3.one;
-			mapSettings.anchorMax = Vector3.one;
+			mapSettings.SetParent(MapWindow.instance._window.transform, false);
 			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
 			mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 140);
 			
