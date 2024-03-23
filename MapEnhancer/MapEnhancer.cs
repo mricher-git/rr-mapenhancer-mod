@@ -936,7 +936,7 @@ public class MapEnhancer : MonoBehaviour
 			var codeMatcher = new CodeMatcher(instructions)
 				.MatchStartForward(
 				new CodeMatch(OpCodes.Ldc_R4, 100f),
-				new CodeMatch(OpCodes.Ldc_R4, 5000f),
+				new CodeMatch(OpCodes.Ldc_R4, 10000f),
 				new CodeMatch(OpCodes.Call))//, ((Func<GameObject, Transform, GameObject>)UnityEngine.Object.Instantiate<GameObject>).Method.GetGenericMethodDefinition()))
 				.ThrowIfNotMatch("Could not find Mathf.Clamp.map")
 				.SetAndAdvance(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings)))
