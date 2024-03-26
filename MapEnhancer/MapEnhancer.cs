@@ -211,6 +211,7 @@ public class MapEnhancer : MonoBehaviour
 		Loader.LogDebug("OnMapDidLoad2");
 
 		MapState = MapStates.MAPLOADED;
+		CleanupIconsAndLabels();
 		JunctionMarker.CreatePrefab();
 
 		Junctions = new GameObject("Junctions");
@@ -241,6 +242,27 @@ public class MapEnhancer : MonoBehaviour
 		{
 			MapBuilder.Shared.Rebuild();
 			OnMapWindowShown(true);
+		}
+	}
+
+	private void CleanupIconsAndLabels()
+	{
+		var mi = Resources.FindObjectsOfTypeAll<MapIcon>();
+		var ml = Resources.FindObjectsOfTypeAll<MapLabel>();
+
+		foreach (var m in mi)
+		{
+			var gr = m.GetComponent<GraphicRaycaster>();
+			var cs = m.GetComponent<CanvasScaler>();
+			if (gr) DestroyImmediate(gr);
+			if (cs) DestroyImmediate(cs);
+		}
+		foreach (var m in ml)
+		{
+			var gr = m.GetComponent<GraphicRaycaster>();
+			var cs = m.GetComponent<CanvasScaler>();
+			if (gr) DestroyImmediate(gr);
+			if (cs) DestroyImmediate(cs);
 		}
 	}
 
