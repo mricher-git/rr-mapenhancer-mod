@@ -13,6 +13,7 @@ using MapEnhancer.UMM;
 using Model;
 using Model.Definition;
 using Model.OpsNew;
+using RollingStock;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -604,8 +605,23 @@ public class MapEnhancer : MonoBehaviour
 			if (car.Archetype.IsLocomotive())
 			{
 				var marker = car.GetComponentInChildren<MapIcon>();
-				void OnClick() { if (Instance == null) marker.OnClick -= OnClick; lastInspectedCar = car; }
-				marker.OnClick += OnClick;
+				void OnClick()
+				{
+					if (Instance == null) 
+					{
+						marker.OnClick = delegate { CarPickable.HandleClick(car); };
+						CarPickable.HandleClick(car);
+						return;
+					}
+
+					Instance.lastInspectedCar = car;
+
+					if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = car;
+					if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(car);
+
+					CarInspector.Show(car);
+				}
+				marker.OnClick = OnClick;
 			}
 			else
 			{
@@ -652,6 +668,10 @@ public class MapEnhancer : MonoBehaviour
 		car.MapIcon.OnClick = delegate
 		{
 			if (Instance) Instance.lastInspectedCar = car;
+
+			if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = car;
+			if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(car);
+
 			CarInspector.Show(car);
 		};
 		car.UpdateMapIconPosition(car._mover.Position, car._mover.Rotation);
