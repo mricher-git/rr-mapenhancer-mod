@@ -47,7 +47,7 @@ public class MapEnhancer : MonoBehaviour
 	private BoundingSphere[] cullingSpheres;
 	private MapResizer resizer;
 	private bool mapFollowMode;
-	private Car? lastInspectedCar;
+	private UnityEngine.Component? mapCameraTarget;
 	public RectTransform mapSettings;
 	private Sprite dropdownSprite;
 	private List<TMP_Dropdown.OptionData> _teleportLocations;
@@ -368,7 +368,7 @@ public class MapEnhancer : MonoBehaviour
 				position.y = mapCamera.position.y;
 				mapCamera.position = position;
 				dropdown!.SetValueWithoutNotify(0);
-				lastInspectedCar = car;
+				mapCameraTarget = car;
 				MapWindow.instance.mapDrag._isDragging = false;
 			}).GetComponent<TMP_Dropdown>();
 			dropdown.gameObject.AddComponent<DropdownClickHandler>();
@@ -634,7 +634,8 @@ public class MapEnhancer : MonoBehaviour
 						return;
 					}
 
-					Instance.lastInspectedCar = car;
+					Instance.mapCameraTarget = car;
+					MapWindow.instance.mapDrag._isDragging = false;
 
 					if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = car;
 					if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(car);
@@ -687,7 +688,8 @@ public class MapEnhancer : MonoBehaviour
 
 		car.MapIcon.OnClick = delegate
 		{
-			if (Instance) Instance.lastInspectedCar = car;
+			if (Instance) Instance.mapCameraTarget = car;
+			MapWindow.instance.mapDrag._isDragging = false;
 
 			if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = car;
 			if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(car);
@@ -749,20 +751,26 @@ public class MapEnhancer : MonoBehaviour
 			}
 			else if (Settings.mapRecenter.Down())
 			{
-				lastInspectedCar = null;
+				mapCameraTarget = mapFollowMode ? Camera.main : null;
+				MapWindow.instance.mapDrag._isDragging = false;
 				Vector3 currentCameraPosition = CameraSelector.shared.CurrentCameraPosition;
 				currentCameraPosition.y = 5000f;
 				mapCamera.transform.localPosition = currentCameraPosition;
 			}
 		}
 
-		if (mapFollowMode == true)
+		if (mapFollowMode == true && mapCameraTarget != null)
 		{
-			var car = lastInspectedCar;
-			if (car != null)
+			if (mapCameraTarget is Car car)
 			{
 				Vector3 position = WorldTransformer.GameToWorld(Vector3.Lerp(car.LastBodyPosition[0], car.LastBodyPosition[1], 0.5f));
 
+				position.y = mapCamera.transform.position.y;
+				mapCamera.transform.position = position;
+			}
+			else if (mapCameraTarget is Camera cam)
+			{
+				Vector3 position = Camera.main.transform.position;
 				position.y = mapCamera.transform.position.y;
 				mapCamera.transform.position = position;
 			}
@@ -770,7 +778,7 @@ public class MapEnhancer : MonoBehaviour
 
 		var mapWindow = MapWindow.instance;
 		var mapDrag = MapWindow.instance.mapDrag;
-		if (mapDrag._isDragging) lastInspectedCar = null;
+		if (mapDrag._isDragging) mapCameraTarget = null;
 
 		if (!mapDrag._pointerOver || !GameInput.IsMouseOverGameWindow(mapWindow._window)) return;
 
@@ -965,7 +973,7 @@ public class MapEnhancer : MonoBehaviour
 					return;
 				}
 
-				Instance.lastInspectedCar = __instance;
+				Instance.mapCameraTarget = __instance;
 
 				if (GameInput.IsShiftDown) TrainController.Shared.SelectedCar = __instance;
 				if (GameInput.IsControlDown) CameraSelector.shared.FollowCar(__instance);
