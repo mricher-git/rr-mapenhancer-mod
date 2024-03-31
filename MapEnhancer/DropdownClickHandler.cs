@@ -21,8 +21,8 @@ namespace MapEnhancer
 		{
 			if (dropdown.IsExpanded) return;
 			dropdown.ClearOptions();
-			cars = TrainController.Shared.Cars.Where((Car car) => car.IsLocomotive).OrderBy(car => car.SortName).ToList();
-			dropdown.AddOptions(cars.Select(car => car.DisplayName).Prepend("Locomotive...").ToList());
+			cars = TrainController.Shared.Cars.Where((Car car) => car.IsLocomotive).OrderBy(car => car.Ident.RoadNumber.Length).ThenBy(car => car.Ident.RoadNumber).ToList();
+			dropdown.AddOptions(cars.Select(car => string.IsNullOrEmpty(car.DefinitionInfo.Metadata.Name) ? "" : $"{car.Ident.RoadNumber.PadRight(6)}<pos=50%>({car.DefinitionInfo.Metadata.Name.Split()[0]})").Prepend("Locomotive...").ToList());
 		}
 	}
 }
