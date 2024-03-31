@@ -57,7 +57,19 @@ public class MapEnhancer : MonoBehaviour
 		{
 			if (_teleportLocations == null)
 			{
-				_teleportLocations = new List<TMP_Dropdown.OptionData>() { new TMP_Dropdown.OptionData("Jump...") };
+				var POIs = GameObject.Find("World/POIs").transform;
+				if (!POIs.Find("Connelly"))
+				{
+					var sp = new GameObject("Connelly", typeof(SpawnPoint)).transform;
+					sp.SetParent(POIs, false);
+					sp.position = new Vector3(396.79f, 608.67f, 350.66f);
+					sp.eulerAngles = new Vector3(0, 255f, 0);
+				}
+
+				var logCamp = POIs.Find("LogCamp1");
+				if (logCamp) logCamp.name = "Walker";
+
+				_teleportLocations = new List<TMP_Dropdown.OptionData>() { new TMP_Dropdown.OptionData("Location...") };
 				var areas = OpsController.Shared.Areas;
 				Dictionary<string, Color> locationColorLookup = new Dictionary<string, Color>();
 				locationColorLookup = SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp =>
