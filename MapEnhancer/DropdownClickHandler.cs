@@ -22,7 +22,14 @@ namespace MapEnhancer
 			if (dropdown.IsExpanded) return;
 			dropdown.ClearOptions();
 			cars = TrainController.Shared.Cars.Where((Car car) => car.IsLocomotive).OrderBy(car => car.Ident.RoadNumber.Length).ThenBy(car => car.Ident.RoadNumber).ToList();
-			dropdown.AddOptions(cars.Select(car => string.IsNullOrEmpty(car.DefinitionInfo.Metadata.Name) ? "" : $"{car.Ident.RoadNumber.PadRight(6)}<pos=50%>({car.DefinitionInfo.Metadata.Name.Split()[0]})").Prepend("Locomotive...").ToList());
+			dropdown.AddOptions(cars.Select(car =>
+			{
+				if (string.IsNullOrEmpty(car.DefinitionInfo.Metadata.Name)) return "";
+				var splitName = car.DefinitionInfo.Metadata.Name.Split();
+				var name = splitName[0] == "EMD" ? splitName[1] : splitName[0];
+				var typeName = car.DisplayName.Length > 9 ? "" : $"({name})";
+				return $"{car.DisplayName}<pos=70%>{typeName}";
+			}).Prepend("Locomotive...").ToList());
 		}
 	}
 }

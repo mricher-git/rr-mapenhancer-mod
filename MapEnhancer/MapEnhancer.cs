@@ -50,48 +50,6 @@ public class MapEnhancer : MonoBehaviour
 	private UnityEngine.Component? mapCameraTarget;
 	public RectTransform mapSettings;
 	private Sprite dropdownSprite;
-	private List<TMP_Dropdown.OptionData> _teleportLocations;
-	private List<TMP_Dropdown.OptionData> teleportLocations
-	{
-		get
-		{
-			if (_teleportLocations == null)
-			{
-				var POIs = GameObject.Find("World/POIs").transform;
-				if (!POIs.Find("Connelly"))
-				{
-					var sp = new GameObject("Connelly", typeof(SpawnPoint)).transform;
-					sp.SetParent(POIs, false);
-					sp.position = new Vector3(396.79f, 608.67f, 350.66f);
-					sp.eulerAngles = new Vector3(0, 255f, 0);
-				}
-
-				var logCamp = POIs.Find("LogCamp1");
-				if (logCamp) logCamp.name = "Walker";
-
-				_teleportLocations = new List<TMP_Dropdown.OptionData>() { new TMP_Dropdown.OptionData("Location...") };
-				var areas = OpsController.Shared.Areas;
-				Dictionary<string, Color> locationColorLookup = new Dictionary<string, Color>();
-				locationColorLookup = SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp =>
-				{
-					var area = OpsController.Shared.ClosestAreaForGamePosition(sp.GamePositionRotation.Item1);
-					var color = area ? area.tagColor : Color.grey;
-					return new { sp.name, color };
-				}).ToDictionary(kvp => kvp.name, kvp => kvp.color);
-
-				var tex = new Texture2D(20, 20);
-				dropdownSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector3.zero);
-				_teleportLocations.AddRange(SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp => new TMP_Dropdown.OptionData(sp.name, dropdownSprite, locationColorLookup[sp.name])).OrderBy(sp =>
-				{
-					float h, s, v;
-					Color.RGBToHSV(sp.color, out h, out s, out v);
-
-					return h;
-				}));
-			}
-			return _teleportLocations;
-		}
-	}
 
 	// Holder stops "prefab" from going active immediately
 	private static GameObject _prefabHolder;
@@ -304,11 +262,10 @@ public class MapEnhancer : MonoBehaviour
 		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.On;
 
 		if (mapSettings) Destroy(mapSettings.gameObject);
-		if (_teleportLocations != null)
+		if (dropdownSprite != null)
 		{
 			Destroy(dropdownSprite.texture);
 			Destroy(dropdownSprite);
-			_teleportLocations = null;
 		}
 	}
 
@@ -337,13 +294,14 @@ public class MapEnhancer : MonoBehaviour
 		mapSettings = settingsGo.GetComponent<RectTransform>();
 		mapSettings.SetParent(MapWindow.instance._window.transform, false);
 		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
-		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 140);
+		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 145);
 
 		var panel = UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, builder =>
 		{
-			builder.FieldLabelWidth = 100f;
+			builder.FieldLabelWidth = 105f;
 			builder.AddField("Follow Mode", builder.AddToggle(() => mapFollowMode, (x) => mapFollowMode = x));
 			TMP_Dropdown? dropdown = null;
+			var teleportLocations = GetTeleportLocations();
 			dropdown = builder.AddDropdown(teleportLocations, 0, (index) =>
 			{
 				SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
@@ -384,8 +342,46 @@ public class MapEnhancer : MonoBehaviour
 				MapWindow.instance.mapDrag._isDragging = false;
 			}).GetComponent<TMP_Dropdown>();
 			dropdown.gameObject.AddComponent<DropdownClickHandler>();
-
+			DestroyImmediate(dropdown.template.transform.Find("Viewport/Content/Item/Item Checkmark").gameObject);
+			dropdown.template.transform.Find("Viewport/Content/Item/Item Label").GetComponent<RectTransform>().offsetMin = new Vector2(10f, 1f);
 			dropdown.template.sizeDelta = new Vector2(0f, 15 * 20f + 8f);
+		}
+
+		List<TMP_Dropdown.OptionData> GetTeleportLocations()
+		{
+			var POIs = GameObject.Find("World/POIs").transform;
+			if (!POIs.Find("Connelly"))
+			{
+				var sp = new GameObject("Connelly", typeof(SpawnPoint)).transform;
+				sp.SetParent(POIs, false);
+				sp.position = WorldTransformer.GameToWorld(new Vector3(11896.60f, 608.67f, 2875.93f));
+				sp.eulerAngles = new Vector3(0, 255f, 0);
+			}
+
+			var logCamp = POIs.Find("LogCamp1");
+			if (logCamp) logCamp.name = "Walker";
+
+			var _teleportLocations = new List<TMP_Dropdown.OptionData>() { new TMP_Dropdown.OptionData("Location...") };
+			var areas = OpsController.Shared.Areas;
+			Dictionary<string, Color> locationColorLookup = new Dictionary<string, Color>();
+			locationColorLookup = SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp =>
+			{
+				var area = OpsController.Shared.ClosestAreaForGamePosition(sp.GamePositionRotation.Item1);
+				var color = area ? area.tagColor : Color.grey;
+				return new { sp.name, color };
+			}).ToDictionary(kvp => kvp.name, kvp => kvp.color);
+
+			var tex = new Texture2D(20, 20);
+			dropdownSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector3.zero);
+			_teleportLocations.AddRange(SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").Select(sp => new TMP_Dropdown.OptionData(sp.name, dropdownSprite, locationColorLookup[sp.name])).OrderBy(sp =>
+			{
+				float h, s, v;
+				Color.RGBToHSV(sp.color, out h, out s, out v);
+
+				return h;
+			}));
+
+			return _teleportLocations;
 		}
 	}
 
@@ -1196,6 +1192,10 @@ public static class Extensions
 		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 15);
 		rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 15);
 		tmp_Dropdown.itemImage = image;
+
+		UnityEngine.Object.DestroyImmediate(tmp_Dropdown.template.transform.Find("Viewport/Content/Item/Item Checkmark").gameObject);
+		tmp_Dropdown.template.transform.Find("Viewport/Content/Item/Item Label").GetComponent<RectTransform>().offsetMin = new Vector2(10f, 1f);
+
 		return tmp_Dropdown.GetComponent<RectTransform>();
 	}
 }
