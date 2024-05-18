@@ -53,9 +53,9 @@ namespace MapEnhancer
 			aspect = rect.width / rect.height;
 			windowMargins = originalSize - window.InitialContentSize;
 
-			_rectTransform.sizeDelta = minSize;
+			_windowRectTransform.sizeDelta = minSize;
 
-			var canvasRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
+			var canvasRect = _windowRectTransform.parent.GetComponent<RectTransform>().rect;
 			largeWindowSize = canvasRect.size * 0.75f;
 
 			notifier = canvas.gameObject.AddComponent<ResizeNotifier>();
@@ -69,7 +69,7 @@ namespace MapEnhancer
 		void OnEnable()
 		{
 			var windowRectTransform = window._rectTransform;
-			var parentRectTransform = _rectTransform.parent.GetComponent<RectTransform>();
+			var parentRectTransform = _windowRectTransform.parent.GetComponent<RectTransform>();
 			if (windowRectTransform.sizeDelta.x > parentRectTransform.sizeDelta.x || windowRectTransform.sizeDelta.y > parentRectTransform.sizeDelta.y)
 				windowRectTransform.sizeDelta = parentRectTransform.sizeDelta;
 		}
@@ -83,16 +83,16 @@ namespace MapEnhancer
 		public void OnPointerUp(PointerEventData data)
 		{
 			if (isLarge)
-				largeWindowSize = _rectTransform.sizeDelta;
+				largeWindowSize = _windowRectTransform.sizeDelta;
 		}
 
 
 		void UpdateWindowSize()
 		{
-			Rect canvasRect = _rectTransform.parent.GetComponent<RectTransform>().rect;
+			Rect canvasRect = _windowRectTransform.parent.GetComponent<RectTransform>().rect;
 			
-			maxSize = new Vector2(canvasRect.max.x - _rectTransform.localPosition.x,
-								  _rectTransform.localPosition.y - canvasRect.min.y);
+			maxSize = new Vector2(canvasRect.max.x - _windowRectTransform.localPosition.x,
+								  _windowRectTransform.localPosition.y - canvasRect.min.y);
 
 			if (canvasRect.width / canvasRect.height < aspect)
 			{
@@ -187,14 +187,14 @@ namespace MapEnhancer
 
 			if (isLarge)
 			{
-				_rectTransform.anchoredPosition = largeWindowPos;
-				_rectTransform.sizeDelta = largeWindowSize;
+				_windowRectTransform.anchoredPosition = largeWindowPos;
+				_windowRectTransform.sizeDelta = largeWindowSize;
 			}
 			else
 			{
-				largeWindowPos = _rectTransform.anchoredPosition;
-				_rectTransform.anchoredPosition = Vector2.zero;
-				_rectTransform.sizeDelta = minSize;
+				largeWindowPos = _windowRectTransform.anchoredPosition;
+				_windowRectTransform.anchoredPosition = Vector2.zero;
+				_windowRectTransform.sizeDelta = minSize;
 			}
 			if (isShown)
 				window.ClampToParentBounds();

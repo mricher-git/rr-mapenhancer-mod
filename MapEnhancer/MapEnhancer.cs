@@ -1016,13 +1016,12 @@ public class MapEnhancer : MonoBehaviour
 		{
 			var codeMatcher = new CodeMatcher(instructions)
 				.MatchStartForward(
-				new CodeMatch(OpCodes.Ldc_R4, 100f),
-				new CodeMatch(OpCodes.Ldc_R4, 10000f),
-				new CodeMatch(OpCodes.Call))//, ((Func<GameObject, Transform, GameObject>)UnityEngine.Object.Instantiate<GameObject>).Method.GetGenericMethodDefinition()))
-				.ThrowIfNotMatch("Could not find Mathf.Clamp.map")
+				new CodeMatch(OpCodes.Ldc_R4, 100f))
 				.SetAndAdvance(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings)))
-				.SetAndAdvance(OpCodes.Ldfld, AccessTools.Field(typeof(Loader.MapEnhancerSettings), nameof(Loader.MapEnhancerSettings.MapZoomMin)))
-				.InsertAndAdvance(new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings))))
+				.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Loader.MapEnhancerSettings), nameof(Loader.MapEnhancerSettings.MapZoomMin))))
+				.MatchStartForward(
+				new CodeMatch(OpCodes.Ldc_R4, 10000f))
+				.SetAndAdvance(OpCodes.Ldsfld, AccessTools.Field(typeof(Loader), nameof(Loader.Settings)))
 				.InsertAndAdvance(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(Loader.MapEnhancerSettings), nameof(Loader.MapEnhancerSettings.MapZoomMax))));
 			return codeMatcher.InstructionEnumeration();
 		}
@@ -1076,6 +1075,7 @@ public class MapEnhancer : MonoBehaviour
 	[HarmonyPatch]
 	public static class PreventRebuildFromMovingCamera
 	{
+		/*
 		[HarmonyTranspiler]
 		[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.Rebuild))]
 		static IEnumerable<CodeInstruction> RebuildTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -1089,7 +1089,7 @@ public class MapEnhancer : MonoBehaviour
 				.RemoveInstructionsWithOffsets (0, 12);
 			return codeMatcher.InstructionEnumeration();
 		}
-
+		*/
 		[HarmonyTranspiler]
 		[HarmonyPatch(typeof(MapWindow), nameof(MapWindow.OnWindowShown))]
 		static IEnumerable<CodeInstruction> OnWindowShownTranspiler(IEnumerable<CodeInstruction> instructions)
