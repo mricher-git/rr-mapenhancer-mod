@@ -2,8 +2,11 @@ using Game.Messages;
 using Game.State;
 using MapEnhancer.UMM;
 using Track;
+using UI;
+using UI.ContextMenu;
 using UI.Map;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 namespace MapEnhancer
@@ -36,6 +39,26 @@ namespace MapEnhancer
 
 		void OnMapMarkerPressed()
 		{
+			if (Mouse.current.rightButton.wasReleasedThisFrame)
+			{
+				RequestSetSwitchUnlocked toggleLocked = new RequestSetSwitchUnlocked(junction.id, !junction.IsCTCSwitchUnlocked);
+				if (!StateManager.CheckAuthorizedToSendMessage(toggleLocked) || !junction.IsCTCSwitch)
+					return;
+
+				UI.ContextMenu.ContextMenu shared = UI.ContextMenu.ContextMenu.Shared;
+				if (UI.ContextMenu.ContextMenu.IsShown)
+				{
+					shared.Hide();
+				}
+				shared.Clear();
+				shared.AddButton(ContextMenuQuadrant.Brakes, junction.IsCTCSwitchUnlocked ? "Lock Switch" : "Unlock Switch", SpriteName.Select, delegate
+				{
+					StateManager.ApplyLocal(toggleLocked);
+				});
+				shared.Show("CTC Switch");
+				return;
+			}
+
 			if (Loader.Settings.DoubleClick)
 			{
 				if (!(Time.unscaledTime - lastClick < 0.3f))
@@ -44,9 +67,8 @@ namespace MapEnhancer
 					return;
 				}
 			}
-
+			
 			var setSwitch = new RequestSetSwitch(junction.id, !junction.isThrown);
-			if (junction.IsCTCSwitch && StateManager.AccessLevel < Game.AccessControl.AccessLevel.Dispatcher) return;
 			StateManager.ApplyLocal(setSwitch);
 		}
 

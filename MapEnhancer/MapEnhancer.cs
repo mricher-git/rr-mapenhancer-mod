@@ -391,10 +391,14 @@ public class MapEnhancer : MonoBehaviour
 		{
 			foreach (var marker in MapBuilder.Shared._mapIcons.ToArray())
 			{
-				if (marker == null || !marker.isActiveAndEnabled) continue;
+				if (marker == null) continue;
 
 				Car car = marker.transform.parent.GetComponent<Car>();
 				if (car == null) continue;
+
+				var image = marker.GetComponentInChildren<Image>(true);
+				marker.Text.gameObject.SetActive(!car.IsInBardo);
+				image.gameObject.SetActive(!car.IsInBardo);
 
 				if (car.Archetype.IsFreight())
 				{
@@ -417,7 +421,7 @@ public class MapEnhancer : MonoBehaviour
 							color *= intensity;
 						}
 					}
-					marker.GetComponentInChildren<Image>().color = color;
+					image.color = color;
 					
 					yield return null;
 				}
@@ -536,16 +540,6 @@ public class MapEnhancer : MonoBehaviour
 		mapBuilder.segmentLineWidthMin = Settings.TrackLineThickness;
 		mapBuilder.segmentLineWidthMax = Settings.MapZoomMax / 5000f * 20;
 
-		Material mat;
-		mat = GetTrackClassMaterial(mapBuilder, (int)TrackClass.Mainline);
-		mat.color = Settings.TrackColorMainline;
-		mat = GetTrackClassMaterial(mapBuilder, (int)TrackClass.Branch);
-		mat.color = Settings.TrackColorBranch;
-		mat = GetTrackClassMaterial(mapBuilder, (int)TrackClass.Industrial);
-		mat.color = Settings.TrackColorIndustrial;
-		mat = GetTrackClassMaterial(mapBuilder, 3);
-		mat.color = Settings.TrackColorUnavailable;
-
 		var renderTex = mapBuilder.mapCamera.targetTexture;
 		if (renderTex && renderTex.antiAliasing != (int)Settings.MSAA)
 		{
@@ -560,20 +554,6 @@ public class MapEnhancer : MonoBehaviour
 			mapBuilder.UpdateForZoom();
 		}
 		resizer.SetMinimumSize(Settings.WindowSizeMin);
-	}
-
-	private static Material GetTrackClassMaterial(MapBuilder mapBuilder, int trackClass)
-	{
-		Material material;
-		var color = Loader.MapEnhancerSettings.TrackClassColorMap[trackClass];
-		if (mapBuilder._materials.TryGetValue(color, out material))
-		{
-			return material;
-		}
-
-		material = new Material(mapBuilder.splineMaterial);
-		mapBuilder._materials[color] = material;
-		return material;
 	}
 
 	private static void CreateTraincarPrefab()
@@ -630,15 +610,16 @@ public class MapEnhancer : MonoBehaviour
 	{
 		foreach (Car car in TrainController.Shared.Cars)
 		{
+			var marker = car.GetComponentInChildren<MapIcon>(true);
+
 			if (car.Archetype.IsLocomotive())
 			{
-				var marker = car.GetComponentInChildren<MapIcon>();
 				void OnClick()
 				{
 					if (Instance == null) 
 					{
-						marker.OnClick = delegate { CarPickable.HandleClick(car); };
-						CarPickable.HandleClick(car);
+						marker.OnClick = delegate { CarPickable.HandleShowInspector(car); };
+						CarPickable.HandleShowInspector(car);
 						return;
 					}
 
@@ -654,7 +635,6 @@ public class MapEnhancer : MonoBehaviour
 			}
 			else
 			{
-				var marker = car.GetComponentInChildren<MapIcon>();
 				if (!marker)
 					AddTraincarMarker(car);
 			}
@@ -736,7 +716,7 @@ public class MapEnhancer : MonoBehaviour
 		mapIcon.transform.rotation = Quaternion.Euler(90f, posRot.Value.Rotation.eulerAngles.y, 0f);
 		mapIcon.OnClick = delegate
 		{
-			flare.Activate();
+			flare.Activate(ObjectPicker.CreateEvent(PickableActivation.Primary));
 		};
 	}
 
@@ -851,7 +831,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref Color __result)
 		{
-			__result = Loader.MapEnhancerSettings.TrackClassColorMap[(int)TrackClass.Mainline];
+			__result = Instance?.Settings.TrackColorMainline ?? Loader.MapEnhancerSettings.TrackColorMainlineOrig;
 
 			return false;
 		}
@@ -862,7 +842,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref Color __result)
 		{
-			__result = Loader.MapEnhancerSettings.TrackClassColorMap[(int)TrackClass.Branch];
+			__result = Instance?.Settings.TrackColorBranch ?? Loader.MapEnhancerSettings.TrackColorBranchOrig;
 
 			return false;
 		}
@@ -873,7 +853,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref Color __result)
 		{
-			__result = Loader.MapEnhancerSettings.TrackClassColorMap[(int)TrackClass.Industrial];
+			__result = Instance?.Settings.TrackColorIndustrial ?? Loader.MapEnhancerSettings.TrackColorIndustrialOrig;
 
 			return false;
 		}
@@ -884,7 +864,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref Color __result)
 		{
-			__result = Loader.MapEnhancerSettings.TrackClassColorMap[3];
+			__result = Instance?.Settings.TrackColorUnavailable ?? Loader.MapEnhancerSettings.TrackColorUnavailableOrig;
 
 			return false;
 		}
@@ -946,17 +926,6 @@ public class MapEnhancer : MonoBehaviour
 		}
 	}
 
-	[HarmonyPatch(typeof(TrainController), nameof(TrainController.HandleRequestSetSwitch))]
-	private static class HostAccessLevelSetSwitchPatch
-	{
-		private static bool Prefix(TrainController __instance, RequestSetSwitch setSwitch, IPlayer sender)
-		{
-			TrackNode node = __instance.graph.GetNode(setSwitch.nodeId);
-			if (node.IsCTCSwitch && HostManager.Shared.AccessLevelForPlayerId(sender.PlayerId) < AccessLevel.Dispatcher) return false;
-			return true;
-		}
-	}
-
 	[HarmonyPatch(typeof(Car), nameof(Car.FinishSetup))]
 	private static class CarFinishSetupPatch
 	{
@@ -976,8 +945,8 @@ public class MapEnhancer : MonoBehaviour
 			{
 				if (Instance == null)
 				{
-					marker.OnClick = delegate { CarPickable.HandleClick(__instance); };
-					CarPickable.HandleClick(__instance);
+					marker.OnClick = delegate { CarPickable.HandleShowInspector(__instance); };
+					CarPickable.HandleShowInspector(__instance);
 					return;
 				}
 
