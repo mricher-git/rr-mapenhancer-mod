@@ -12,7 +12,7 @@ using Map.Runtime;
 using MapEnhancer.UMM;
 using Model;
 using Model.Definition;
-using Model.OpsNew;
+using Model.Ops;
 using RollingStock;
 using System;
 using System.Collections;
