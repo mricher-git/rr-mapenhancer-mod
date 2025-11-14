@@ -12,7 +12,7 @@ using Map.Runtime;
 using MapEnhancer.UMM;
 using Model;
 using Model.Definition;
-using Model.OpsNew;
+using Model.Ops;
 using RollingStock;
 using System;
 using System.Collections;
@@ -90,6 +90,11 @@ public class MapEnhancer : MonoBehaviour
 	private Coroutine traincarColorUpdater;
 
 	private static HashSet<string> _mainlineSegments;
+	private static HashSet<string> _industrialSegments = new HashSet<string>();
+	private static HashSet<string> _passengerStopSegments = new HashSet<string>();
+	private static Dictionary<string, Color> _industrialSegmentColors = new Dictionary<string, Color>();
+	private static bool _isMapFullyLoaded = false;
+	
 	public static HashSet<string> mainlineSegments
 	{
 		get
@@ -117,7 +122,11 @@ public class MapEnhancer : MonoBehaviour
 	{
 		_mainlineSegments = new HashSet<string>();
 		_mainlineSwitches = new HashSet<string>();
-		foreach (var span in FindObjectsOfType<CTCBlock>(true).SelectMany(block => block.Spans))
+		var ctcBlocks = FindObjectsOfType<CTCBlock>(true);
+		
+		Loader.LogDebug($"Found {ctcBlocks.Length} CTC blocks for mainline identification");
+		
+		foreach (var span in ctcBlocks.SelectMany(block => block.Spans))
 		{
 			span.UpdateCachedPointsIfNeeded();
 			foreach (var seg in span._cachedSegments)
@@ -127,6 +136,81 @@ public class MapEnhancer : MonoBehaviour
 				_mainlineSwitches.Add(seg.b.id);
 			}
 		}
+		
+		Loader.LogDebug($"Identified {_mainlineSegments.Count} mainline segments and {_mainlineSwitches.Count} mainline switches");
+	}
+
+	private static void ReclassifyAllTrackSegments()
+	{
+		// Skip if using visual-only mode
+		if (Instance?.Settings.UseVisualOnlyTrackColors ?? false)
+		{
+			Loader.LogDebug("Skipping track reclassification - visual-only mode enabled");
+			return;
+		}
+			
+		// Re-classify all existing track segments to handle race conditions with other mods
+		var segments = FindObjectsOfType<TrackSegment>();
+		int mainlineCount = 0;
+		int branchCount = 0;
+		int industrialCount = 0;
+		int preservedCount = 0;
+		
+		foreach (var segment in segments)
+		{
+			// Preserve existing industrial classifications
+			if (segment.trackClass == TrackClass.Industrial)
+			{
+				preservedCount++;
+				industrialCount++;
+				continue;
+			}
+			
+			// Only reclassify mainline vs branch for non-industrial tracks
+			if (mainlineSegments.Contains(segment.id))
+			{
+				segment.trackClass = TrackClass.Mainline;
+				mainlineCount++;
+			}
+			else
+			{
+				segment.trackClass = TrackClass.Branch;
+				branchCount++;
+			}
+		}
+		
+		Loader.LogDebug($"Reclassified {segments.Length} track segments: {mainlineCount} mainline, {branchCount} branch, {industrialCount} industrial preserved, {preservedCount} total preserved");
+	}
+
+	private static void ReclassifyIndustrialTracks()
+	{
+		// Skip if using visual-only mode
+		if (Instance?.Settings.UseVisualOnlyTrackColors ?? false)
+		{
+			Loader.LogDebug("Skipping industrial track reclassification - visual-only mode enabled");
+			return;
+		}
+			
+		// Ensure all industrial tracks are properly classified after our bulk reclassification
+		var industries = FindObjectsOfType<IndustryComponent>();
+		int industrialTracksSet = 0;
+		
+		foreach (var industry in industries)
+		{
+			if (industry is ProgressionIndustryComponent) continue;
+			
+			foreach (var tspan in industry.TrackSpans)
+			{
+				tspan.UpdateCachedPointsIfNeeded();
+				foreach (var seg in tspan._cachedSegments)
+				{
+					seg.trackClass = TrackClass.Industrial;
+					industrialTracksSet++;
+				}
+			}
+		}
+		
+		Loader.LogDebug($"Set {industrialTracksSet} industrial track segments from {industries.Length} industry components");
 	}
 
 	public static MapEnhancer Instance
@@ -179,7 +263,6 @@ public class MapEnhancer : MonoBehaviour
 	{
 		Loader.LogDebug("OnMapDidLoad");
 		if (MapState == MapStates.MAPLOADED) return;
-		Loader.LogDebug("OnMapDidLoad2");
 
 		MapState = MapStates.MAPLOADED;
 		CleanupIconsAndLabels();
@@ -205,6 +288,16 @@ public class MapEnhancer : MonoBehaviour
 		Junctions.transform.position = worldPos;
 
 		MapBuilder.Shared.mapCamera.GetComponent<UniversalAdditionalCameraData>().requiresDepthOption = CameraOverrideOption.Off;
+
+		// Now that the map is fully loaded, populate mainline segments and classify all existing tracks
+		_isMapFullyLoaded = true;
+		// Force re-population to ensure we have the most up-to-date CTC blocks from all mods
+		_mainlineSegments = null;
+		_mainlineSwitches = null;
+		// Re-classify all existing track segments now that we know which are mainline
+		ReclassifyAllTrackSegments();
+		// Ensure industrial tracks are properly set after our reclassification
+		ReclassifyIndustrialTracks();
 
 		Rebuild();
 		resizer = MapResizer.Create();
@@ -242,6 +335,14 @@ public class MapEnhancer : MonoBehaviour
 		Loader.LogDebug("OnMapWillUnload");
 
 		MapState = MapStates.MAPUNLOADING;
+		// Reset flag to prevent track classification during map unload/reload
+		_isMapFullyLoaded = false;
+		
+		// Clear tracking sets
+		_passengerStopSegments.Clear();
+		_industrialSegments.Clear();
+		_industrialSegmentColors.Clear();
+		
 		Messenger.Default.Unregister<WorldDidMoveEvent>(this);
 		if (cullingGroup != null)
 		{
@@ -293,7 +394,7 @@ public class MapEnhancer : MonoBehaviour
 		var settingsGo = new GameObject("Map Settings", typeof(RectTransform));
 		mapSettings = settingsGo.GetComponent<RectTransform>();
 		mapSettings.SetParent(MapWindow.instance._window.transform, false);
-		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 30);
+		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Top, 27, 120); // Increased height to fit 4 items
 		mapSettings.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Right, 4, 145);
 
 		var panel = UIPanel.Create(mapSettings, FindObjectOfType<ProgrammaticWindowCreator>().builderAssets, builder =>
@@ -316,11 +417,41 @@ public class MapEnhancer : MonoBehaviour
 				}
 			}).GetComponent<TMP_Dropdown>();
 
-			AddLocoSelectorDropdown(builder);
-		});
-		settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
-
-		void AddLocoSelectorDropdown(UIPanelBuilder builder)
+		AddLocoSelectorDropdown(builder);
+		AddResetSwitchesDropdown(builder);
+	});
+	settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
+	
+	void AddResetSwitchesDropdown(UIPanelBuilder builder)
+	{
+		TMP_Dropdown? resetDropdown = null;
+		var resetOptions = new List<TMP_Dropdown.OptionData>() 
+		{ 
+			new TMP_Dropdown.OptionData("Switch Reset..."),
+			new TMP_Dropdown.OptionData("All to Normal"),
+			new TMP_Dropdown.OptionData("All to Thrown")
+		};
+		
+		resetDropdown = builder.AddDropdown(resetOptions, 0, (index) =>
+		{
+			if (index == 0) return; // Skip default option
+			
+			if (index == 1)
+			{
+				// Reset all switches to normal (straight)
+				ResetAllSwitchesToNormal();
+			}
+			else if (index == 2)
+			{
+				// Set all switches to thrown (diverging)
+				ResetAllSwitchesToThrown();
+			}
+			
+			resetDropdown!.SetValueWithoutNotify(0); // Reset dropdown to default
+		}).GetComponent<TMP_Dropdown>();
+	}
+	
+	void AddLocoSelectorDropdown(UIPanelBuilder builder)
 		{
 			RectTransform rectTransform = builder.CreateRectView("DropDown", 0, 0);
 
@@ -385,6 +516,44 @@ public class MapEnhancer : MonoBehaviour
 		}
 	}
 
+	private void ResetAllSwitchesToNormal()
+	{
+		int switchesReset = 0;
+		
+		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
+		{
+			var switchNode = kvp.Value.node;
+			
+			// Only reset if switch is thrown (not in normal position)
+			if (switchNode.isThrown)
+			{
+				StateManager.ApplyLocal(new RequestSetSwitch(switchNode.id, false));
+				switchesReset++;
+			}
+		}
+		
+		Loader.Log($"Reset {switchesReset} switches to normal position");
+	}
+
+	private void ResetAllSwitchesToThrown()
+	{
+		int switchesReset = 0;
+		
+		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
+		{
+			var switchNode = kvp.Value.node;
+			
+			// Only set if switch is in normal position (not thrown)
+			if (!switchNode.isThrown)
+			{
+				StateManager.ApplyLocal(new RequestSetSwitch(switchNode.id, true));
+				switchesReset++;
+			}
+		}
+		
+		Loader.Log($"Set {switchesReset} switches to thrown position");
+	}
+
 	private IEnumerator TraincarColorUpdater()
 	{
 		for (;;)
@@ -393,37 +562,38 @@ public class MapEnhancer : MonoBehaviour
 			{
 				if (marker == null) continue;
 
+				// Check if this is a car icon
 				Car car = marker.transform.parent.GetComponent<Car>();
-				if (car == null) continue;
-
-				var image = marker.GetComponentInChildren<Image>(true);
-				marker.Text.gameObject.SetActive(!car.IsInBardo);
-				image.gameObject.SetActive(!car.IsInBardo);
-
-				if (car.Archetype.IsFreight())
+				if (car != null)
 				{
-					string text;
-					bool flag;
-					Vector3 vector;
-					OpsCarPosition opsCarPosition;
-					OpsController opsController = OpsController.Shared;
-					Color color = Color.white;
+					var image = marker.GetComponentInChildren<Image>(true);
+					marker.Text.gameObject.SetActive(!car.IsInBardo);
+					image.gameObject.SetActive(!car.IsInBardo);
 
-					if (opsController != null && opsController.TryGetDestinationInfo(car, out text, out flag, out vector, out opsCarPosition))
+					if (car.Archetype.IsFreight())
 					{
-						Area area = opsController.AreaForCarPosition(opsCarPosition);
+						string text;
+						bool flag;
+						Vector3 vector;
+						OpsCarPosition opsCarPosition;
+						OpsController opsController = OpsController.Shared!;
+						Color color = Color.white;
 
-						if (area) color = area.tagColor;
-
-						if (!flag)
+						if (opsController != null && opsController.TryGetDestinationInfo(car, out text, out flag, out vector, out opsCarPosition))
 						{
-							var intensity = 1 / color.maxColorComponent;
-							color *= intensity;
+							Area area = opsController.AreaForCarPosition(opsCarPosition);
+
+							if (area) color = area.tagColor;
+							if (!flag)
+							{
+								var intensity = 1 / color.maxColorComponent;
+								color *= intensity;
+							}
 						}
+						image.color = color;
+						
+						yield return null;
 					}
-					image.color = color;
-					
-					yield return null;
 				}
 			}
 			yield return null;
@@ -788,10 +958,11 @@ public class MapEnhancer : MonoBehaviour
 		List<Location> locations = new List<Location>();
 		foreach (TrackSegment trackSegment in Graph.Shared.segments.Values)
 		{
-			Location? result = Graph.Shared.LocationFromPoint(trackSegment, gamePosition, radius);
-			if (result.HasValue && result.Value.IsValid)
+			Location loc;
+			bool result = Graph.Shared.TryGetLocationFromPoint(trackSegment, gamePosition, radius, out loc);
+			if (result && loc.IsValid)
 			{
-				locations.Add((Location)result);
+				locations.Add((Location)loc);
 			}
 		}
 
@@ -864,7 +1035,15 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static bool Prefix(ref Color __result)
 		{
-			__result = Instance?.Settings.TrackColorUnavailable ?? Loader.MapEnhancerSettings.TrackColorUnavailableOrig;
+			// When industry area colors are enabled, use light grey for unreachable tracks
+			if (Instance?.Settings.EnableIndustryAreaColors ?? true)
+			{
+				__result = new Color(0.7f, 0.7f, 0.7f); // Light grey
+			}
+			else
+			{
+				__result = Instance?.Settings.TrackColorUnavailable ?? Loader.MapEnhancerSettings.TrackColorUnavailableOrig;
+			}
 
 			return false;
 		}
@@ -875,6 +1054,18 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static void Postfix(TrackSegment __instance)
 		{
+			// Skip track class modification if using visual-only mode
+			if (Instance?.Settings.UseVisualOnlyTrackColors ?? false)
+				return;
+				
+			// Only classify tracks after the map is fully loaded to avoid race conditions with other mods
+			if (!_isMapFullyLoaded)
+				return;
+			
+			// Don't override industrial tracks that may have been set by other systems
+			if (__instance.trackClass == TrackClass.Industrial)
+				return;
+				
 			if (mainlineSegments.Contains(__instance.id))
 				__instance.trackClass = TrackClass.Mainline;
 			else
@@ -882,38 +1073,230 @@ public class MapEnhancer : MonoBehaviour
 		}
 	}
 
-	/*
-	[HarmonyPatch(typeof(PassengerStop), nameof(PassengerStop.OnEnable))]
-	private static class PaxTrackClassPatch
-	{
-		private static void Postfix(PassengerStop __instance)
-		{
-			foreach (var tspan in __instance.TrackSpans)
-			{
-				tspan.UpdateCachedPointsIfNeeded();
-				foreach (var seg in tspan._cachedSegments)
-				{
-					seg.trackClass = Track.TrackClass.Industrial;
-				}
-			}
-		}
-	}
-	*/
-
 	[HarmonyPatch(typeof(IndustryComponent), nameof(IndustryComponent.Start))]
 	private static class IndustryTrackClassPatch
 	{
 		private static void Postfix(IndustryComponent __instance)
 		{
 			if (__instance is ProgressionIndustryComponent) return;
+			
+			// Default to yellow if area coloring is disabled
+			Color industryColor = Color.yellow;
+			Area? foundArea = null;
+			
+			// Only find area colors if the feature is enabled
+			if (Instance?.Settings.EnableIndustryAreaColors ?? true)
+			{
+				// Find which area actually owns this industry by checking all area registries
+				if (OpsController.Shared != null)
+				{
+					// Search all areas to find which one contains this industry in its Industries collection
+					foreach (var area in OpsController.Shared.Areas)
+					{
+						if (area.Industries != null)
+						{
+							foreach (var industry in area.Industries)
+							{
+								// Check if any component of this industry matches our IndustryComponent
+								if (industry.Components != null)
+								{
+									foreach (var component in industry.Components)
+									{
+										if (component == __instance)
+										{
+											foundArea = area;
+											if (foundArea.tagColor != default(Color))
+											{
+												industryColor = foundArea.tagColor;
+											}
+											Loader.LogDebug($"[MapEnhancer] Industry '{__instance.gameObject.name}' -> Found in area '{foundArea.identifier}', Color: {industryColor}");
+											goto FoundIndustry; // Break out of all loops
+										}
+									}
+								}
+							}
+						}
+					}
+					
+					// If not found in any area registry, fall back to position-based
+					Loader.LogDebug($"[MapEnhancer] Industry '{__instance.gameObject.name}' -> NOT FOUND in area registries, trying position fallback");
+					Vector3 worldPosition = __instance.transform.position;
+					Vector2 gamePosition = WorldTransformer.WorldToGame(worldPosition);
+					foundArea = OpsController.Shared.ClosestAreaForGamePosition(gamePosition);
+					if (foundArea != null && foundArea.tagColor != default(Color))
+					{
+						industryColor = foundArea.tagColor;
+						Loader.LogDebug($"[MapEnhancer] Industry '{__instance.gameObject.name}' -> Position fallback to area '{foundArea.identifier}', Color: {industryColor}");
+					}
+				}
+			}
+			
+			FoundIndustry:
+			
+			// Apply the color to all track segments
+			if (__instance.TrackSpans != null)
+			{
+				foreach (var tspan in __instance.TrackSpans)
+				{
+					tspan.UpdateCachedPointsIfNeeded();
+					if (tspan._cachedSegments != null)
+					{
+						foreach (var seg in tspan._cachedSegments)
+						{
+							// Always track industrial segments for visual-only mode
+							_industrialSegments.Add(seg.id);
+							// Store the area color for this segment
+							_industrialSegmentColors[seg.id] = industryColor;
+							
+							// Only modify track class if not using visual-only mode
+							if (Instance == null || !Instance.Settings.UseVisualOnlyTrackColors)
+							{
+								seg.trackClass = Track.TrackClass.Industrial;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(PassengerStop), nameof(PassengerStop.OnEnable))]
+	private static class PassengerStopPatch
+	{
+		private static void Postfix(PassengerStop __instance)
+		{
+			// Always track passenger stops (even if tracking feature is disabled)
+			// This allows them to override industrial color
+			Loader.LogDebug($"PassengerStop: {__instance.DisplayName}");
 			foreach (var tspan in __instance.TrackSpans)
 			{
 				tspan.UpdateCachedPointsIfNeeded();
 				foreach (var seg in tspan._cachedSegments)
 				{
-					seg.trackClass = Track.TrackClass.Industrial;
+					_passengerStopSegments.Add(seg.id);
+					Loader.LogDebug($"Found PassengerStop segment: {seg.id}");
 				}
 			}
+		}
+	}
+
+	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.ColorForSegment))]
+	private static class ColorForSegmentPatch
+	{
+		private static void Postfix(ref TrackSegment segment, ref Color __result)
+		{
+			// Only apply if visual-only mode is enabled
+			if (Instance == null || !Instance.Settings.UseVisualOnlyTrackColors) return;
+
+			if (!segment.Available)
+			{
+				// When industry area colors are enabled, use light grey for unreachable tracks
+				if (Instance.Settings.EnableIndustryAreaColors)
+				{
+					__result = new Color(0.7f, 0.7f, 0.7f); // Light grey
+				}
+				else
+				{
+					__result = Instance.Settings.TrackColorUnavailable;
+				}
+				return;
+			}
+			
+			// Use HashSet lookups for visual-only mode (don't rely on track class property)
+			// Default to branch color
+			__result = Instance.Settings.TrackColorBranch;
+			
+			// Check mainline (CTC blocks define mainline)
+			if (_mainlineSegments.Contains(segment.id))
+			{
+				__result = Instance.Settings.TrackColorMainline;
+			}
+			
+			// Check industrial (industry tracks override mainline/branch)
+			// BUT: Never show industrial if this is a passenger stop (even if tracking disabled)
+			if (_industrialSegments.Contains(segment.id) 
+				&& !_mainlineSegments.Contains(segment.id)
+				&& !_passengerStopSegments.Contains(segment.id))
+			{
+				// Use cached area color for this industrial segment
+				if (_industrialSegmentColors.TryGetValue(segment.id, out Color segmentColor))
+				{
+					__result = segmentColor;
+				}
+				else
+				{
+					__result = Instance.Settings.TrackColorIndustrial;
+				}
+			}
+			
+			// Check passenger stops (shows purple ONLY if tracking enabled)
+			if (Instance.Settings.EnablePassengerStopTracking && _passengerStopSegments.Contains(segment.id))
+			{
+				__result = Instance.Settings.TrackColorPax;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(MapBuilder), "Add")]
+	private static class MapBuilderAddPatch
+	{
+		private static void Postfix(MapIcon icon)
+		{
+			// Check if this is a signal's map icon
+			var signal = icon.transform.parent?.GetComponent<CTCSignal>();
+			if (signal == null) return;
+
+			// Find the icon's image
+			var image = icon.GetComponentInChildren<Image>(true);
+			if (image == null) return;
+
+			// Start monitoring this signal icon
+			if (!icon.gameObject.GetComponent<SignalIconColorizer>())
+			{
+				var colorizer = icon.gameObject.AddComponent<SignalIconColorizer>();
+				colorizer.Setup(signal, image);
+			}
+		}
+	}
+
+	private class SignalIconColorizer : MonoBehaviour
+	{
+		private CTCSignal signal;
+		private Image icon;
+		private SignalAspect lastAspect;
+
+		public void Setup(CTCSignal ctcSignal, Image iconImage)
+		{
+			signal = ctcSignal;
+			icon = iconImage;
+			lastAspect = signal.CurrentAspect;
+			UpdateColor();
+		}
+
+		void Update()
+		{
+			if (signal != null && signal.CurrentAspect != lastAspect)
+			{
+				lastAspect = signal.CurrentAspect;
+				UpdateColor();
+			}
+		}
+
+		private void UpdateColor()
+		{
+			Color signalColor = lastAspect switch
+			{
+				SignalAspect.Stop => Color.red,
+				SignalAspect.Approach => Color.yellow,
+				SignalAspect.Clear => Color.green,
+				SignalAspect.DivergingApproach => Color.yellow,
+				SignalAspect.DivergingClear => Color.green,
+				SignalAspect.Restricting => new Color(1f, 0.5f, 0f), // Orange
+				_ => Color.white
+			};
+
+			signalColor.a = 0.8f;
+			icon.color = signalColor;
 		}
 	}
 
@@ -1044,21 +1427,6 @@ public class MapEnhancer : MonoBehaviour
 	[HarmonyPatch]
 	public static class PreventRebuildFromMovingCamera
 	{
-		/*
-		[HarmonyTranspiler]
-		[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.Rebuild))]
-		static IEnumerable<CodeInstruction> RebuildTranspiler(IEnumerable<CodeInstruction> instructions)
-		{
-			var codeMatcher = new CodeMatcher(instructions)
-				.MatchStartForward(
-				new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(CameraSelector), "shared")),
-				new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(CameraSelector), "CurrentCameraPosition")),
-				new CodeMatch(OpCodes.Stloc_1))
-				.ThrowIfNotMatch("Could not find CameraSelector.Shared.get_CurrentCameraPosition()")
-				.RemoveInstructionsWithOffsets (0, 12);
-			return codeMatcher.InstructionEnumeration();
-		}
-		*/
 		[HarmonyTranspiler]
 		[HarmonyPatch(typeof(MapWindow), nameof(MapWindow.OnWindowShown))]
 		static IEnumerable<CodeInstruction> OnWindowShownTranspiler(IEnumerable<CodeInstruction> instructions)
@@ -1089,7 +1457,6 @@ public class MapEnhancer : MonoBehaviour
 				.MatchStartForward(
 				new CodeMatch(OpCodes.Ldloc_3),
 				new CodeMatch(OpCodes.Ldc_R4, 1f))
-				//new CodeMatch(OpCodes.Newobj))//, ((Func<GameObject, Transform, GameObject>)UnityEngine.Object.Instantiate<GameObject>).Method.GetGenericMethodDefinition()))
 				.ThrowIfNotMatch("Could not find new BoundingSphere")
 				.Advance(1)
 				.Set(OpCodes.Ldc_R4, 100f);
