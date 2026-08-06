@@ -399,3 +399,16 @@ FodyWeavers.xsd
 
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
+
+# Ignore local project files
+Directory.Build.props
+
+# Ignore .md files created by EF Core (but not README)
+*.md
+!README.md
+
+# Ignore html
+*.html
+
+railroader.json
+build.bat
