@@ -1,28 +1,28 @@
-# Map Enhancer - Community Fix Edition
+# Map Enhancer
 
-[![Version](https://img.shields.io/badge/version-1.5.6-blue.svg)](https://github.com/Refizar08/rr-mapenhancer-fix/releases)
+[![Version](https://img.shields.io/badge/version-1.5.6-blue.svg)](https://github.com/mricher-git/rr-mapenhancer-mod/releases)
 [![Game](https://img.shields.io/badge/Railroader-2025-green.svg)](https://store.steampowered.com/app/1683150/Railroader/)
-[![Download](https://img.shields.io/badge/Download-Latest%20Release-success?logo=github)](https://github.com/Refizar08/rr-mapenhancer-fix/releases/download/v1.5.6/MapEnhancer_v1.5.6.zip)
+[![Download](https://img.shields.io/badge/Download-Latest%20Release-success?logo=github)](https://github.com/mricher-git/rr-mapenhancer-mod/releases/latest)
 
-> **Note:** This is a maintained fork by me with fixes and improvements for Map Enhancer. I had pull from the main repository but provide working updates and bug fixes until Vanguard officially updates the original mod.
+> **Note:** Map Enhancer is an original Railroader mod by Vanguard. Version 1.5.6 includes community fixes and improvements contributed to this repository.
 
-## 🎯 About This Fork
+## 🎯 About Map Enhancer
 
-This version of Map Enhancer is **up-to-date and fully functional** with the latest version of Railroader. While we await official updates from the original author (Vanguard), this fork includes critical bug fixes and new features to keep the mod working smoothly.
+Map Enhancer adds map controls, overlays, track visualization, train information, and tools for managing your railroad. The latest stable release is **v1.5.6**.
 
-**All feedback and contributions are appreciated!**
+Community contributions are welcome and are maintained together with the original project.
 
 ## 📥 Installation
 
-1. Download the latest release from the [Releases page](https://github.com/Refizar08/rr-mapenhancer-fix/releases)
+1. Download the latest release from the [Releases page](https://github.com/mricher-git/rr-mapenhancer-mod/releases)
 2. Install the mod in Unity Mod Manager
-3. Launch Railroader and check your prefered settings
+3. Launch Railroader and configure your preferred settings
 
 ## ✨ Features
 
-### 🆕 Community Fork Exclusive Features
+### Recent Improvements
 
-### **Fixes and Improvements** v1.5.6 (2026-07-21)
+#### **v1.5.6** (2026-07-21)
 
 - 🛠️ Added: **Enable Debug Logging** setting
   - Added a dedicated toggle to enable verbose diagnostic logging only when needed.
@@ -64,8 +64,8 @@ This version of Map Enhancer is **up-to-date and fully functional** with the lat
 - 🧭 Added: Marker placement offset beside the track for improved readability
 
 #### **Road Crossing Markers** (v1.5.4.4)
-Image1: https://i.ibb.co/Vc09M3PP/image.png
-Image2: https://i.ibb.co/6RncbXKt/image.png
+![Road crossing markers](https://i.ibb.co/Vc09M3PP/image.png)
+![Road crossing marker clustering](https://i.ibb.co/6RncbXKt/image.png)
 - 🛣️ Added: Road crossing markers on the map (uses `level-crossing.png`)
 - 🧭 Added: Clustering for nearby crossing points to avoid duplicate icons at multi-track crossings
 - ⚙️ Added: `Show Road Crossing Markers` toggle in settings
@@ -76,8 +76,8 @@ Image2: https://i.ibb.co/6RncbXKt/image.png
 - ✅ Default: Enabled, but can be disabled if the automatic fouling check is too strict
 
 #### **Turntable Control from Map** (v1.5.4.3)
-Image1: https://i.ibb.co/spwqpXrW/image.png
-Video: https://youtu.be/zMtQZzuPjXE
+![Turntable controls](https://i.ibb.co/spwqpXrW/image.png)
+[Turntable controls video](https://youtu.be/zMtQZzuPjXE)
 - 🎯 Smooth rotation of the turntable using the Map controls
 - 🛜 Multiplayer sync for host and client
 - 🚂 When the table fouled, the rotation is blocked
@@ -237,9 +237,9 @@ Video: https://youtu.be/zMtQZzuPjXE
 - 💾 Colors persist between sessions
 - 🔄 Reset to defaults available
 
-### 🆕 What's New in This Fork
+### Highlights
 
-This fork includes **ALL original Map Enhancer features** plus community improvements:
+Map Enhancer includes the original features below along with the community improvements listed above:
 
 - 🧠 **Train & Cargo Intelligence** - Aggregated consist stats, fuel tracker, and freight/destination summary (v1.5.5)
 - 🚃 **Individual Car Tooltips** - Car identifiers, waybill delivery status, cargo loads, journal oil health tracker and predictive alerts (v1.5.5)
@@ -285,7 +285,6 @@ All settings are available and shown when game first launches.
 - **Require Double Click**: Toggle for double-click requirement on map interactions
 - **Show Turntable Markers**: Toggle visibility of turntable markers (default: ON)
 - **Check Turntable Clearance/Fouling Before Rotation**: Block turntable rotation when fouled (default: ON)
-- **Check Turntable Clearance/Fouling Before Rotation**: Block turntable rotation when fouled (default: ON)
 
 ### Keyboard Bindings
 - **Toggle Map Size**: Default `Z` (customizable)
@@ -317,7 +316,7 @@ Customize colors for all track types with RGBA sliders:
 
 ## 🐛 Known Issues
 
-- I don't know!
+- Compatibility may vary with other mods that modify the map or track classification.
 
 ## 💬 Feedback & Support
 
@@ -326,12 +325,11 @@ All feedback, bug reports, and feature requests are welcomed!
 - **Discord Forum**: [Map Enhancer Discussion](https://discord.com/channels/795878618697433097/1212693563738034196)
 - **Railroader Official Discord**: [Join Discord](https://discord.gg/r8xeTPAnhw)
 - **RTM Discord**: [Join Discord](https://discord.gg/zyg4CXg32N)
-- **Issues**: Report bugs on discord forum or [Create issue](https://github.com/Refizar08/rr-mapenhancer-fix/issues)
-- **Maintainer**: Reaper8f on Discord
+- **Issues**: Report bugs in the [issue tracker](https://github.com/mricher-git/rr-mapenhancer-mod/issues)
 
 ## 🤝 Contributing
 
-Contributions are welcome! If you'd like to help improve Map Enhancer:
+Contributions are welcome. Please open an issue or pull request with details about the proposed change.
 
 ## 📜 Version History
 
@@ -455,13 +453,13 @@ Contributions are welcome! If you'd like to help improve Map Enhancer:
 - 🔌 Improved: Compatibility with other map/track mods
 
 ### Previous Versions
-See [Releases](https://github.com/Refizar08/rr-mapenhancer-fix/releases) for complete version history.
+See [Releases](https://github.com/mricher-git/rr-mapenhancer-mod/releases) for complete version history.
 
 ## 📋 Credits
 
 - **Original Author**: Vanguard - [Original Nexus Mods Page](https://www.nexusmods.com/railroader/mods/18/)
-- **Community Maintainer**: Refizar08 (reaper8f)
-- **Contributors**: Thanks to all community members
+- **Community Contributor**: Reaper8f
+- **Contributors**: Thanks to all community members who contributed fixes, testing, and documentation.
 
 ## 📄 License
 
@@ -471,4 +469,4 @@ This project maintains the same license as the original Map Enhancer mod.
 
 **🎮 Happy Railroading!**
 
-*This fork is not officially affiliated with or endorsed by the original Map Enhancer author. It's a community effort to keep the mod functional and improved while we await official updates.*
+*Community improvements are included in the main repository with the original author's project history and credits preserved.*

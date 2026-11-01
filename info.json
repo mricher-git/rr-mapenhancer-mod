@@ -3,12 +3,12 @@
 	"DisplayName": "Map Enhancer",
 	"Author": "Vanguard",
 	"Contributors": [
-		"Reaper8f (Refizar08)"
+		"Reaper8f"
 	],
 	"Version": "1.5.6",
 	"AssemblyName": "MapEnhancer.dll",
 	"EntryMethod": "MapEnhancer.UMM.Loader.Load",
 	"ManagerVersion": "0.32.4",
 	"HomePage": "https://www.nexusmods.com/railroader/mods/18/",
-	"Repository": "https://raw.githubusercontent.com/Refizar08/rr-mapenhancer-fix/master/repository.json"
+	"Repository": "https://raw.githubusercontent.com/mricher-git/rr-mapenhancer-mod/master/repository.json"
 }
