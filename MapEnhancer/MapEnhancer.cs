@@ -160,7 +160,7 @@ public class MapEnhancer : MonoBehaviour
 	private TextMeshProUGUI? _trainTooltipText;
 	private RectTransform? _trainTooltipRect;
 	private bool _lastShowAdvancedMapWindowSettings = true;
-	
+
 	public static HashSet<string> mainlineSegments
 	{
 		get
@@ -189,9 +189,9 @@ public class MapEnhancer : MonoBehaviour
 		_mainlineSegments = new HashSet<string>();
 		_mainlineSwitches = new HashSet<string>();
 		var ctcBlocks = FindObjectsOfType<CTCBlock>(true);
-		
+
 		Loader.LogDebug($"Found {ctcBlocks.Length} CTC blocks for mainline identification");
-		
+
 		foreach (var span in ctcBlocks.SelectMany(block => block.Spans))
 		{
 			span.UpdateCachedPointsIfNeeded();
@@ -202,7 +202,7 @@ public class MapEnhancer : MonoBehaviour
 				_mainlineSwitches.Add(seg.b.id);
 			}
 		}
-		
+
 		Loader.LogDebug($"Identified {_mainlineSegments.Count} mainline segments and {_mainlineSwitches.Count} mainline switches");
 	}
 
@@ -272,15 +272,15 @@ public class MapEnhancer : MonoBehaviour
 		_gradeTooltipGo = new GameObject("Grade Tooltip", typeof(RectTransform));
 		_gradeTooltipRect = _gradeTooltipGo.GetComponent<RectTransform>();
 		_gradeTooltipRect.SetParent(MapWindow.instance._window.transform, false);
-		
+
 		_gradeTooltipRect.anchorMin = new Vector2(0f, 1f);
 		_gradeTooltipRect.anchorMax = new Vector2(0f, 1f);
 		_gradeTooltipRect.pivot = new Vector2(0f, 1f);
 		_gradeTooltipRect.anchoredPosition = new Vector2(10f, -40f);
-		
+
 		var bgImage = _gradeTooltipGo.AddComponent<Image>();
 		bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
-		
+
 		var textGo = new GameObject("Text", typeof(RectTransform));
 		textGo.transform.SetParent(_gradeTooltipGo.transform, false);
 		_gradeTooltipText = textGo.AddComponent<TextMeshProUGUI>();
@@ -288,17 +288,17 @@ public class MapEnhancer : MonoBehaviour
 		_gradeTooltipText.color = Color.white;
 		_gradeTooltipText.alignment = TextAlignmentOptions.Center;
 		_gradeTooltipText.raycastTarget = false;
-		
+
 		var fitter = textGo.AddComponent<ContentSizeFitter>();
 		fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-		
+
 		var verticalLayout = _gradeTooltipGo.AddComponent<VerticalLayoutGroup>();
 		verticalLayout.childAlignment = TextAnchor.MiddleCenter;
 		verticalLayout.padding = new RectOffset(10, 10, 8, 8);
 		verticalLayout.childControlWidth = true;
 		verticalLayout.childControlHeight = true;
-		
+
 		var tooltipFitter = _gradeTooltipGo.AddComponent<ContentSizeFitter>();
 		tooltipFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		tooltipFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -313,35 +313,35 @@ public class MapEnhancer : MonoBehaviour
 		_trainTooltipGo = new GameObject("Train Tooltip", typeof(RectTransform));
 		_trainTooltipRect = _trainTooltipGo.GetComponent<RectTransform>();
 		_trainTooltipRect.SetParent(MapWindow.instance._window.transform, false);
-		
+
 		_trainTooltipRect.anchorMin = new Vector2(0f, 1f);
 		_trainTooltipRect.anchorMax = new Vector2(0f, 1f);
 		_trainTooltipRect.pivot = new Vector2(0f, 1f);
 		_trainTooltipRect.anchoredPosition = new Vector2(10f, -110f);
-		
-			var bgImage = _trainTooltipGo.AddComponent<Image>();
-			// Plain tooltip background (no custom coloring)
-			bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
-		
+
+		var bgImage = _trainTooltipGo.AddComponent<Image>();
+		// Plain tooltip background (no custom coloring)
+		bgImage.color = new Color(0.1f, 0.1f, 0.1f, 0.85f);
+
 		var textGo = new GameObject("Text", typeof(RectTransform));
 		textGo.transform.SetParent(_trainTooltipGo.transform, false);
-			_trainTooltipText = textGo.AddComponent<TextMeshProUGUI>();
-			_trainTooltipText.fontSize = 12f;
-			// Plain white text for tooltips
-			_trainTooltipText.color = Color.white;
+		_trainTooltipText = textGo.AddComponent<TextMeshProUGUI>();
+		_trainTooltipText.fontSize = 12f;
+		// Plain white text for tooltips
+		_trainTooltipText.color = Color.white;
 		_trainTooltipText.alignment = TextAlignmentOptions.Left;
 		_trainTooltipText.raycastTarget = false;
-		
+
 		var fitter = textGo.AddComponent<ContentSizeFitter>();
 		fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-		
+
 		var verticalLayout = _trainTooltipGo.AddComponent<VerticalLayoutGroup>();
 		verticalLayout.childAlignment = TextAnchor.MiddleCenter;
 		verticalLayout.padding = new RectOffset(10, 10, 8, 8);
 		verticalLayout.childControlWidth = true;
 		verticalLayout.childControlHeight = true;
-		
+
 		var tooltipFitter = _trainTooltipGo.AddComponent<ContentSizeFitter>();
 		tooltipFitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
 		tooltipFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -666,7 +666,7 @@ public class MapEnhancer : MonoBehaviour
 		{
 			var sb = new System.Text.StringBuilder();
 
-				const string headerColor = "#9CDCFE";
+			const string headerColor = "#9CDCFE";
 
 			// -----------------------------
 			// Car Name
@@ -689,9 +689,9 @@ public class MapEnhancer : MonoBehaviour
 			string statusColor = status switch
 			{
 				"Delivered" => "#4CAF50",   // Green
-				"Pending"   => "#FFC107",   // Amber
-				"None"      => "#9E9E9E",   // Grey
-				_           => "#FFFFFF"
+				"Pending" => "#FFC107",   // Amber
+				"None" => "#9E9E9E",   // Grey
+				_ => "#FFFFFF"
 			};
 
 			sb.Append($"\n\n<color={headerColor}>Status</color>\n");
@@ -926,114 +926,114 @@ public class MapEnhancer : MonoBehaviour
 	{
 		DestroyGradeMarkers();
 
-        if (!Settings.ShowGradeMarkers || GradeMarkers == null)
-            return;
+		if (!Settings.ShowGradeMarkers || GradeMarkers == null)
+			return;
 
 		const float minSpacing = 400f; // minimum distance between markers
-        var spawnedPositions = new List<Vector3>();
+		var spawnedPositions = new List<Vector3>();
 
-        // Collect qualified mainline segments
-        var qualifiedSegments = new List<(TrackSegment segment, GradeInfo info)>();
-        foreach (var kvp in Graph.Shared.segments)
-        {
-            var segment = kvp.Value;
-            if (segment == null || segment.a == null || segment.b == null)
-                continue;
-            if (!mainlineSegments.Contains(segment.id))
-                continue;
-            if (!_segmentGrades.TryGetValue(segment.id, out var info))
-                continue;
-            if (Mathf.Abs(info.Grade) < Settings.GradeMarkerMinIntensity)
-                continue;
-            qualifiedSegments.Add((segment, info));
-        }
+		// Collect qualified mainline segments
+		var qualifiedSegments = new List<(TrackSegment segment, GradeInfo info)>();
+		foreach (var kvp in Graph.Shared.segments)
+		{
+			var segment = kvp.Value;
+			if (segment == null || segment.a == null || segment.b == null)
+				continue;
+			if (!mainlineSegments.Contains(segment.id))
+				continue;
+			if (!_segmentGrades.TryGetValue(segment.id, out var info))
+				continue;
+			if (Mathf.Abs(info.Grade) < Settings.GradeMarkerMinIntensity)
+				continue;
+			qualifiedSegments.Add((segment, info));
+		}
 
-        // Build adjacency map (node -> segments)
-        var nodeToSegments = new Dictionary<string, List<TrackSegment>>();
-        foreach (var (segment, _) in qualifiedSegments)
-        {
-            if (!nodeToSegments.TryGetValue(segment.a.id, out var listA))
-            {
-                listA = new List<TrackSegment>();
-                nodeToSegments[segment.a.id] = listA;
-            }
-            listA.Add(segment);
-            if (!nodeToSegments.TryGetValue(segment.b.id, out var listB))
-            {
-                listB = new List<TrackSegment>();
-                nodeToSegments[segment.b.id] = listB;
-            }
-            listB.Add(segment);
-        }
+		// Build adjacency map (node -> segments)
+		var nodeToSegments = new Dictionary<string, List<TrackSegment>>();
+		foreach (var (segment, _) in qualifiedSegments)
+		{
+			if (!nodeToSegments.TryGetValue(segment.a.id, out var listA))
+			{
+				listA = new List<TrackSegment>();
+				nodeToSegments[segment.a.id] = listA;
+			}
+			listA.Add(segment);
+			if (!nodeToSegments.TryGetValue(segment.b.id, out var listB))
+			{
+				listB = new List<TrackSegment>();
+				nodeToSegments[segment.b.id] = listB;
+			}
+			listB.Add(segment);
+		}
 
-        var visited = new HashSet<string>();
-        foreach (var (startSeg, _) in qualifiedSegments)
-        {
-            if (visited.Contains(startSeg.id)) continue;
+		var visited = new HashSet<string>();
+		foreach (var (startSeg, _) in qualifiedSegments)
+		{
+			if (visited.Contains(startSeg.id)) continue;
 
-            // BFS to collect connected cluster
-            var clusterSegments = new List<TrackSegment>();
-            var queue = new Queue<TrackSegment>();
-            queue.Enqueue(startSeg);
-            visited.Add(startSeg.id);
-            while (queue.Count > 0)
-            {
-                var seg = queue.Dequeue();
-                clusterSegments.Add(seg);
-                // gather neighbors via shared nodes
-                var neighbors = new List<TrackSegment>();
-                if (seg.a != null && nodeToSegments.TryGetValue(seg.a.id, out var na)) neighbors.AddRange(na);
-                if (seg.b != null && nodeToSegments.TryGetValue(seg.b.id, out var nb)) neighbors.AddRange(nb);
-                foreach (var nbr in neighbors)
-                {
-                    if (visited.Contains(nbr.id)) continue;
-                    if (!qualifiedSegments.Any(q => q.segment.id == nbr.id)) continue;
+			// BFS to collect connected cluster
+			var clusterSegments = new List<TrackSegment>();
+			var queue = new Queue<TrackSegment>();
+			queue.Enqueue(startSeg);
+			visited.Add(startSeg.id);
+			while (queue.Count > 0)
+			{
+				var seg = queue.Dequeue();
+				clusterSegments.Add(seg);
+				// gather neighbors via shared nodes
+				var neighbors = new List<TrackSegment>();
+				if (seg.a != null && nodeToSegments.TryGetValue(seg.a.id, out var na)) neighbors.AddRange(na);
+				if (seg.b != null && nodeToSegments.TryGetValue(seg.b.id, out var nb)) neighbors.AddRange(nb);
+				foreach (var nbr in neighbors)
+				{
+					if (visited.Contains(nbr.id)) continue;
+					if (!qualifiedSegments.Any(q => q.segment.id == nbr.id)) continue;
 					var currentGrade = Mathf.Abs(_segmentGrades[seg.id].Grade);
 					var neighborGrade = Mathf.Abs(_segmentGrades[nbr.id].Grade);
 					if (Mathf.Abs(currentGrade - neighborGrade) > 0.5f) continue;
-                    visited.Add(nbr.id);
-                    queue.Enqueue(nbr);
-                }
-            }
+					visited.Add(nbr.id);
+					queue.Enqueue(nbr);
+				}
+			}
 
-            float totalLength = 0f;
+			float totalLength = 0f;
 			float totalSignedGrade = 0f;
 			float peakAbsGrade = 0f;
-            foreach (var seg in clusterSegments)
-            {
-                var info = _segmentGrades[seg.id];
-                totalLength += info.Length;
+			foreach (var seg in clusterSegments)
+			{
+				var info = _segmentGrades[seg.id];
+				totalLength += info.Length;
 				totalSignedGrade += info.Grade * info.Length;
 				peakAbsGrade = Mathf.Max(peakAbsGrade, Mathf.Abs(info.Grade));
-            }
+			}
 
-            // Find midpoint along cumulative length
-            float target = totalLength / 2f;
-            float acc = 0f;
-            Vector3 markerPos = _segmentGrades[clusterSegments[0].id].Midpoint;
+			// Find midpoint along cumulative length
+			float target = totalLength / 2f;
+			float acc = 0f;
+			Vector3 markerPos = _segmentGrades[clusterSegments[0].id].Midpoint;
 			Vector3 markerSide = Vector3.zero;
-            foreach (var seg in clusterSegments)
-            {
-                var info = _segmentGrades[seg.id];
-                if (acc + info.Length >= target)
-                {
-                    float t = (target - acc) / info.Length;
-                    var aPos = WorldTransformer.WorldToGame(seg.a.transform.position);
-                    var bPos = WorldTransformer.WorldToGame(seg.b.transform.position);
-                    markerPos = Vector3.Lerp(aPos, bPos, t);
+			foreach (var seg in clusterSegments)
+			{
+				var info = _segmentGrades[seg.id];
+				if (acc + info.Length >= target)
+				{
+					float t = (target - acc) / info.Length;
+					var aPos = WorldTransformer.WorldToGame(seg.a.transform.position);
+					var bPos = WorldTransformer.WorldToGame(seg.b.transform.position);
+					markerPos = Vector3.Lerp(aPos, bPos, t);
 					markerSide = Vector3.Cross(Vector3.up, (bPos - aPos).normalized);
 					markerSide.y = 0f;
 					if (markerSide.sqrMagnitude > 0f)
 					{
 						markerSide.Normalize();
 					}
-                    break;
-                }
-                acc += info.Length;
-            }
+					break;
+				}
+				acc += info.Length;
+			}
 
-            if (IsTooClose(markerPos, spawnedPositions, minSpacing))
-                continue;
+			if (IsTooClose(markerPos, spawnedPositions, minSpacing))
+				continue;
 
 			markerPos += markerSide * 25f;
 			var worldPos = WorldTransformer.GameToWorld(markerPos);
@@ -1046,7 +1046,7 @@ public class MapEnhancer : MonoBehaviour
 			CreateMarkerAt(worldPos, displayGrade);
 
 			spawnedPositions.Add(markerPos);
-        }
+		}
 
 		bool IsTooClose(Vector3 candidate, List<Vector3> existing, float spacing)
 		{
@@ -1078,15 +1078,15 @@ public class MapEnhancer : MonoBehaviour
 
 			// Keep icon flat on map
 			mapIcon.transform.localRotation =
-				Quaternion.Euler(90f,0f,0f);
+				Quaternion.Euler(90f, 0f, 0f);
 
 			var image = mapIcon.GetComponentInChildren<Image>();
-			if(image != null)
+			if (image != null)
 				image.enabled = false;
 
 			mapIcon.SetText(FormatGradeText(grade));
 
-			if(mapIcon.Text != null)
+			if (mapIcon.Text != null)
 			{
 				mapIcon.Text.color = GetGradeMarkerColor(grade);
 				mapIcon.Text.fontSize = 14f;
@@ -1100,7 +1100,7 @@ public class MapEnhancer : MonoBehaviour
 						MapBuilder.Shared.mapCamera.transform.up
 					);
 				// Flip text face
-				mapIcon.Text.transform.Rotate(0f,180f,0f);
+				mapIcon.Text.transform.Rotate(0f, 180f, 0f);
 			}
 
 			_gradeMarkers.Add(mapIcon);
@@ -1225,7 +1225,7 @@ public class MapEnhancer : MonoBehaviour
 
 			var info = new TrainInfo();
 			info.LeadLoco = null!; // No locomotive
-			
+
 			// For engine-less consists, name it using the first car or similar
 			var leadCar = allCars[0];
 			info.TrainName = leadCar.DisplayName ?? leadCar.Ident.RoadNumber ?? leadCar.id ?? "Unknown";
@@ -1236,13 +1236,13 @@ public class MapEnhancer : MonoBehaviour
 			info.LengthFt = Mathf.CeilToInt(lengthMeters * 3.28084f);
 			info.WeightTons = allCars.Sum(c => c.Weight) / 2000f;
 			info.CarCount = allCars.Count(c => !c.Archetype.IsLocomotive());
-			
+
 			int paxCurrent = 0;
 			int paxCapacity = 0;
 			TryGetPassengerCounts(allCars, out paxCurrent, out paxCapacity);
 			info.PassengerCount = paxCurrent;
 			info.PassengerCapacity = paxCapacity;
-			
+
 			info.DriverName = "";
 			info.DriveMode = "";
 
@@ -1648,7 +1648,7 @@ public class MapEnhancer : MonoBehaviour
 	private static string GetAreaDisplayName(Area area)
 	{
 		if (area == null || string.IsNullOrEmpty(area.identifier)) return "";
-		
+
 		string id = area.identifier.ToLowerInvariant();
 		switch (id)
 		{
@@ -1682,13 +1682,13 @@ public class MapEnhancer : MonoBehaviour
 	{
 		info.HasFreightCars = false;
 		info.LoadedCarCount = 0;
-		info.EmptyCarCount  = 0;
+		info.EmptyCarCount = 0;
 		info.CargoSummary.Clear();
 		info.DestinationSummary.Clear();
 		info.FreightCars.Clear();
 
 		// Temporary structures for grouping
-		var cargoGroupOrder  = new List<string>();
+		var cargoGroupOrder = new List<string>();
 		var cargoGroupCounts = new Dictionary<string, int>();
 		var seenDestinations = new HashSet<string>(StringComparer.Ordinal);
 
@@ -1720,7 +1720,7 @@ public class MapEnhancer : MonoBehaviour
 						if (!string.IsNullOrEmpty(destText))
 						{
 							fci.DestinationName = destText;
-							
+
 							// Extract area name for consist summary
 							var area = opsController.AreaForCarPosition(opsPos);
 							string areaName = GetAreaDisplayName(area);
@@ -1806,7 +1806,7 @@ public class MapEnhancer : MonoBehaviour
 			// --- Loaded / empty classification ---
 			bool isLoaded = fci.LoadWeightTons > 0.01f || fci.Status == "Pending";
 			if (isLoaded) info.LoadedCarCount++;
-			else          info.EmptyCarCount++;
+			else info.EmptyCarCount++;
 
 			// --- Build cargo group label ---
 			string groupLabel = BuildCargoGroupLabel(car, fci.CargoName, isLoaded);
@@ -1922,7 +1922,7 @@ public class MapEnhancer : MonoBehaviour
 					}
 				}
 			}
-			
+
 			if (totalLoadWeightTons > 0f || totalCapacityTons > 0f)
 			{
 				return (totalLoadWeightTons, totalCapacityTons);
@@ -2001,14 +2001,14 @@ public class MapEnhancer : MonoBehaviour
 			Loader.LogDebug("Skipping track reclassification - visual-only mode enabled");
 			return;
 		}
-			
+
 		// Re-classify all existing track segments to handle race conditions with other mods
 		var segments = FindObjectsOfType<TrackSegment>();
 		int mainlineCount = 0;
 		int branchCount = 0;
 		int industrialCount = 0;
 		int preservedCount = 0;
-		
+
 		foreach (var segment in segments)
 		{
 			// Preserve existing industrial classifications
@@ -2018,7 +2018,7 @@ public class MapEnhancer : MonoBehaviour
 				industrialCount++;
 				continue;
 			}
-			
+
 			// Only reclassify mainline vs branch for non-industrial tracks
 			if (mainlineSegments.Contains(segment.id))
 			{
@@ -2031,7 +2031,7 @@ public class MapEnhancer : MonoBehaviour
 				branchCount++;
 			}
 		}
-		
+
 		Loader.LogDebug($"Reclassified {segments.Length} track segments: {mainlineCount} mainline, {branchCount} branch, {industrialCount} industrial preserved, {preservedCount} total preserved");
 	}
 
@@ -2044,15 +2044,15 @@ public class MapEnhancer : MonoBehaviour
 			Loader.LogDebug("Skipping industrial track reclassification - visual-only mode enabled");
 			return;
 		}
-			
+
 		// Ensure all industrial tracks are properly classified after our bulk reclassification
 		var industries = FindObjectsOfType<IndustryComponent>();
 		int industrialTracksSet = 0;
-		
+
 		foreach (var industry in industries)
 		{
 			if (industry is ProgressionIndustryComponent) continue;
-			
+
 			foreach (var tspan in industry.TrackSpans)
 			{
 				tspan.UpdateCachedPointsIfNeeded();
@@ -2063,7 +2063,7 @@ public class MapEnhancer : MonoBehaviour
 				}
 			}
 		}
-		
+
 		Loader.LogDebug($"Set {industrialTracksSet} industrial track segments from {industries.Length} industry components");
 	}
 
@@ -2092,7 +2092,7 @@ public class MapEnhancer : MonoBehaviour
 			{
 				Junctions.SetActive(mapWindowShown);
 			}
-			
+
 			if (mapWindowShown && mapSettings == null)
 			{
 				CreateMapSettings();
@@ -2158,7 +2158,7 @@ public class MapEnhancer : MonoBehaviour
 		Junctions.SetActive(MapWindow.instance._window.IsShown);
 
 		MapWindow.instance._window.OnShownDidChange += OnMapWindowShown;
-		
+
 		if (MapWindow.instance._window.IsShown)
 		{
 			Junctions.SetActive(true);
@@ -2221,7 +2221,7 @@ public class MapEnhancer : MonoBehaviour
 		MapState = MapStates.MAPUNLOADING;
 		// Reset flag to prevent track classification during map unload/reload
 		_isMapFullyLoaded = false;
-		
+
 		// Clear tracking sets
 		_passengerStopSegments.Clear();
 		_industrialSegments.Clear();
@@ -2230,7 +2230,7 @@ public class MapEnhancer : MonoBehaviour
 		_industrialSegmentNames.Clear();
 		_passengerStopSegmentNames.Clear();
 		_spawnPointCategories.Clear();
-		
+
 		Messenger.Default.Unregister<WorldDidMoveEvent>(this);
 		if (cullingGroup != null)
 		{
@@ -2559,18 +2559,21 @@ public class MapEnhancer : MonoBehaviour
 
 			if (Settings.ShowAdvancedMapWindowSettings)
 			{
-				builder.AddField("Hover Grade", builder.AddToggle(() => Settings.ShowGradeOnHover, (x) => {
+				builder.AddField("Hover Grade", builder.AddToggle(() => Settings.ShowGradeOnHover, (x) =>
+				{
 					Settings.ShowGradeOnHover = x;
 					Settings.Save(Loader.ModEntry);
 				}));
 
-				builder.AddField("Grade Markers", builder.AddToggle(() => Settings.ShowGradeMarkers, (x) => {
+				builder.AddField("Grade Markers", builder.AddToggle(() => Settings.ShowGradeMarkers, (x) =>
+				{
 					Settings.ShowGradeMarkers = x;
 					Settings.Save(Loader.ModEntry);
 					OnSettingsChanged();
 				}));
 
-				builder.AddField("Color Overlay", builder.AddToggle(() => Settings.EnableGradeColorOverlay, (x) => {
+				builder.AddField("Color Overlay", builder.AddToggle(() => Settings.EnableGradeColorOverlay, (x) =>
+				{
 					Settings.EnableGradeColorOverlay = x;
 					Settings.Save(Loader.ModEntry);
 					OnSettingsChanged();
@@ -2579,65 +2582,65 @@ public class MapEnhancer : MonoBehaviour
 
 			TMP_Dropdown? dropdown = null;
 			var teleportLocations = GetTeleportLocations();
-		dropdown = builder.AddDropdown(teleportLocations, 0, (index) =>
-		{
-			// Skip if separator or header clicked
-			if (index == 0 || teleportLocations[index].text.StartsWith("---"))
+			dropdown = builder.AddDropdown(teleportLocations, 0, (index) =>
 			{
-				dropdown!.SetValueWithoutNotify(0);
-				return;
-			}
-			
-			SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
-			if (spawnPoint != null)
+				// Skip if separator or header clicked
+				if (index == 0 || teleportLocations[index].text.StartsWith("---"))
+				{
+					dropdown!.SetValueWithoutNotify(0);
+					return;
+				}
+
+				SpawnPoint spawnPoint = TeleportCommand.SpawnPointFor(teleportLocations[index].text);
+				if (spawnPoint != null)
+				{
+					var mapCamera = MapBuilder.Shared.mapCamera.transform;
+					ValueTuple<Vector3, Quaternion> gamePositionRotation = spawnPoint.GamePositionRotation;
+					Vector3 item = gamePositionRotation.Item1;
+					item.y = mapCamera.position.y;
+					mapCamera.position = WorldTransformer.GameToWorld(item);
+					dropdown!.SetValueWithoutNotify(0);
+				}
+			}).GetComponent<TMP_Dropdown>();
+			AddLocoSelectorDropdown(builder);
+			if (Settings.ShowAdvancedMapWindowSettings)
 			{
-				var mapCamera = MapBuilder.Shared.mapCamera.transform;
-				ValueTuple<Vector3, Quaternion> gamePositionRotation = spawnPoint.GamePositionRotation;
-				Vector3 item = gamePositionRotation.Item1;
-				item.y = mapCamera.position.y;
-				mapCamera.position = WorldTransformer.GameToWorld(item);
-				dropdown!.SetValueWithoutNotify(0);
+				AddResetSwitchesDropdown(builder);
 			}
-		}).GetComponent<TMP_Dropdown>();
-		AddLocoSelectorDropdown(builder);
-		if (Settings.ShowAdvancedMapWindowSettings)
+		});
+		settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
+		_lastShowAdvancedMapWindowSettings = Settings.ShowAdvancedMapWindowSettings;
+
+		void AddResetSwitchesDropdown(UIPanelBuilder builder)
 		{
-			AddResetSwitchesDropdown(builder);
-		}
-	});
-	settingsGo.AddComponent<Image>().color = new Color(0.1098f, 0.1098f, 0.1098f, 1f);
-	_lastShowAdvancedMapWindowSettings = Settings.ShowAdvancedMapWindowSettings;
-	
-	void AddResetSwitchesDropdown(UIPanelBuilder builder)
-	{
-		TMP_Dropdown? resetDropdown = null;
-		var resetOptions = new List<TMP_Dropdown.OptionData>() 
-		{ 
+			TMP_Dropdown? resetDropdown = null;
+			var resetOptions = new List<TMP_Dropdown.OptionData>()
+		{
 			new TMP_Dropdown.OptionData("Switch Reset..."),
 			new TMP_Dropdown.OptionData("All to Normal"),
 			new TMP_Dropdown.OptionData("All to Thrown")
 		};
-		
-		resetDropdown = builder.AddDropdown(resetOptions, 0, (index) =>
-		{
-			if (index == 0) return; // Skip default option
-			
-			if (index == 1)
+
+			resetDropdown = builder.AddDropdown(resetOptions, 0, (index) =>
 			{
-				// Reset all switches to normal (straight)
-				ResetAllSwitchesToNormal();
-			}
-			else if (index == 2)
-			{
-				// Set all switches to thrown (diverging)
-				ResetAllSwitchesToThrown();
-			}
-			
-			resetDropdown!.SetValueWithoutNotify(0); // Reset dropdown to default
-		}).GetComponent<TMP_Dropdown>();
-	}
-	
-	void AddLocoSelectorDropdown(UIPanelBuilder builder)
+				if (index == 0) return; // Skip default option
+
+				if (index == 1)
+				{
+					// Reset all switches to normal (straight)
+					ResetAllSwitchesToNormal();
+				}
+				else if (index == 2)
+				{
+					// Set all switches to thrown (diverging)
+					ResetAllSwitchesToThrown();
+				}
+
+				resetDropdown!.SetValueWithoutNotify(0); // Reset dropdown to default
+			}).GetComponent<TMP_Dropdown>();
+		}
+
+		void AddLocoSelectorDropdown(UIPanelBuilder builder)
 		{
 			RectTransform rectTransform = builder.CreateRectView("DropDown", 0, 0);
 
@@ -2667,10 +2670,10 @@ public class MapEnhancer : MonoBehaviour
 		List<TMP_Dropdown.OptionData> GetTeleportLocations()
 		{
 			var POIs = GameObject.Find("World/POIs").transform;
-			
+
 			// Load spawn points from whitelisted mods
 			LoadModSpawnPoints();
-			
+
 			if (!POIs.Find("Connelly"))
 			{
 				var sp = new GameObject("Connelly", typeof(SpawnPoint)).transform;
@@ -2694,12 +2697,12 @@ public class MapEnhancer : MonoBehaviour
 
 			var tex = new Texture2D(20, 20);
 			dropdownSprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), Vector3.zero);
-			
+
 			// Separate vanilla and modded spawn points
 			var allSpawnPoints = SpawnPoint.All.Where(sp => sp.name.ToLower() != "ds").ToList();
 			var vanillaSpawnPoints = allSpawnPoints.Where(sp => !moddedSpawnPointNames.Contains(sp.name)).ToList();
 			var moddedSpawnPoints = allSpawnPoints.Where(sp => moddedSpawnPointNames.Contains(sp.name)).ToList();
-			
+
 			// Add vanilla locations first (sorted by color hue)
 			_teleportLocations.AddRange(vanillaSpawnPoints.Select(sp => new TMP_Dropdown.OptionData(sp.name, dropdownSprite, locationColorLookup[sp.name])).OrderBy(sp =>
 			{
@@ -2707,13 +2710,13 @@ public class MapEnhancer : MonoBehaviour
 				Color.RGBToHSV(sp.color, out h, out s, out v);
 				return h;
 			}));
-			
+
 			// Add modded locations grouped by category if any exist and feature is enabled
 			if (Settings.EnableModdedSpawnPoints && moddedSpawnPoints.Count > 0)
 			{
 				// Sort categories alphabetically
 				var sortedCategories = _spawnPointCategories.Keys.OrderBy(k => k).ToList();
-				
+
 				foreach (var category in sortedCategories)
 				{
 					var categorySpawnPoints = _spawnPointCategories[category];
@@ -2742,7 +2745,7 @@ public class MapEnhancer : MonoBehaviour
 		// Clear previous modded spawn points tracking
 		moddedSpawnPointNames.Clear();
 		_spawnPointCategories.Clear();
-		
+
 		// Skip if feature is disabled
 		if (!Settings.EnableModdedSpawnPoints)
 		{
@@ -2767,46 +2770,46 @@ public class MapEnhancer : MonoBehaviour
 		var modFolders = Directory.GetDirectories(modsPath);
 		Loader.LogDebug($"Scanning {modFolders.Length} mod folders for spawn-points.json files");
 
-	foreach (string modFolderPath in modFolders)
-	{
-		string modFolderName = Path.GetFileName(modFolderPath);
-		string spawnPointsFile = Path.Combine(modFolderPath, "spawn-points.json");
-
-		if (!File.Exists(spawnPointsFile))
+		foreach (string modFolderPath in modFolders)
 		{
-			Loader.LogDebug($"No spawn-points.json found in {modFolderName}");
-			continue;
-		}
+			string modFolderName = Path.GetFileName(modFolderPath);
+			string spawnPointsFile = Path.Combine(modFolderPath, "spawn-points.json");
 
-		try
-		{
-			string json = File.ReadAllText(spawnPointsFile);
-			
-			// Extract title (optional field, defaults to mod folder name)
-			string categoryTitle = modFolderName;
-			var titleMatch = Regex.Match(json, @"""title""\s*:\s*""([^""]+)""");
-			if (titleMatch.Success)
+			if (!File.Exists(spawnPointsFile))
 			{
-				categoryTitle = titleMatch.Groups[1].Value;
-			}
-			
-			// Simple regex-based parsing for the spawn-points.json format
-			// Updated pattern to handle more float formats including scientific notation
-			var nameMatches = Regex.Matches(json, @"""name""\s*:\s*""([^""]+)""");
-			var posMatches = Regex.Matches(json, @"""position""\s*:\s*\{\s*""x""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*,\s*""y""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*,\s*""z""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)");
-
-			if (nameMatches.Count == 0 || posMatches.Count == 0)
-			{
-				Loader.Log($"Invalid spawn-points.json format in {modFolderName}: no spawn points found");
+				Loader.LogDebug($"No spawn-points.json found in {modFolderName}");
 				continue;
 			}
+
+			try
+			{
+				string json = File.ReadAllText(spawnPointsFile);
+
+				// Extract title (optional field, defaults to mod folder name)
+				string categoryTitle = modFolderName;
+				var titleMatch = Regex.Match(json, @"""title""\s*:\s*""([^""]+)""");
+				if (titleMatch.Success)
+				{
+					categoryTitle = titleMatch.Groups[1].Value;
+				}
+
+				// Simple regex-based parsing for the spawn-points.json format
+				// Updated pattern to handle more float formats including scientific notation
+				var nameMatches = Regex.Matches(json, @"""name""\s*:\s*""([^""]+)""");
+				var posMatches = Regex.Matches(json, @"""position""\s*:\s*\{\s*""x""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*,\s*""y""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)\s*,\s*""z""\s*:\s*([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)");
+
+				if (nameMatches.Count == 0 || posMatches.Count == 0)
+				{
+					Loader.Log($"Invalid spawn-points.json format in {modFolderName}: no spawn points found");
+					continue;
+				}
 
 				int spawnPointCount = Math.Min(nameMatches.Count, posMatches.Count);
 
 				for (int i = 0; i < spawnPointCount; i++)
 				{
 					string spawnName = nameMatches[i].Groups[1].Value;
-					
+
 					if (string.IsNullOrEmpty(spawnName))
 					{
 						Loader.Log($"Invalid spawn point data in {modFolderName}: missing name");
@@ -2843,21 +2846,21 @@ public class MapEnhancer : MonoBehaviour
 						_spawnPointCategories[categoryTitle] = new List<string>();
 					}
 					_spawnPointCategories[categoryTitle].Add(spawnName);
-					
+
 					totalLoaded++;
 					Loader.LogDebug($"Loaded spawn point '{spawnName}' from {modFolderName} at ({x}, {y}, {z})");
 				}
-			var perModLogKey = $"{modFolderName}:{spawnPointCount}";
-			if (_spawnPointSummaryLogKeys.Add(perModLogKey))
+				var perModLogKey = $"{modFolderName}:{spawnPointCount}";
+				if (_spawnPointSummaryLogKeys.Add(perModLogKey))
+				{
+					Loader.Log($"Loaded {spawnPointCount} spawn point(s) from {modFolderName}");
+				}
+			}
+			catch (Exception ex)
 			{
-				Loader.Log($"Loaded {spawnPointCount} spawn point(s) from {modFolderName}");
+				Loader.Log($"Error loading spawn points from {modFolderName}: {ex.Message}");
 			}
 		}
-		catch (Exception ex)
-		{
-			Loader.Log($"Error loading spawn points from {modFolderName}: {ex.Message}");
-		}
-	}
 
 		_modSpawnPointsLoaded = true;
 
@@ -2874,11 +2877,11 @@ public class MapEnhancer : MonoBehaviour
 	private void ResetAllSwitchesToNormal()
 	{
 		int switchesReset = 0;
-		
+
 		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
 		{
 			var switchNode = kvp.Value.node;
-			
+
 			// Only reset if switch is thrown (not in normal position)
 			if (switchNode.isThrown)
 			{
@@ -2886,18 +2889,18 @@ public class MapEnhancer : MonoBehaviour
 				switchesReset++;
 			}
 		}
-		
+
 		LogSwitchResetAction("Normal", switchesReset);
 	}
 
 	private void ResetAllSwitchesToThrown()
 	{
 		int switchesReset = 0;
-		
+
 		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
 		{
 			var switchNode = kvp.Value.node;
-			
+
 			// Only set if switch is in normal position (not thrown)
 			if (!switchNode.isThrown)
 			{
@@ -2905,7 +2908,7 @@ public class MapEnhancer : MonoBehaviour
 				switchesReset++;
 			}
 		}
-		
+
 		LogSwitchResetAction("Thrown", switchesReset);
 	}
 
@@ -3149,7 +3152,7 @@ public class MapEnhancer : MonoBehaviour
 
 	private IEnumerator TraincarColorUpdater()
 	{
-		for (;;)
+		for (; ; )
 		{
 			foreach (var marker in MapBuilder.Shared._mapIcons.ToArray())
 			{
@@ -3275,18 +3278,18 @@ public class MapEnhancer : MonoBehaviour
 	private void CreateSwitches()
 	{
 		Loader.LogDebug("CreateSwitches");
-		
+
 		if (TrackObjectManager.Instance == null || TrackObjectManager.Instance._descriptors.switches == null)
 		{
 			return;
 		}
-		
+
 		int switchCount = TrackObjectManager.Instance._descriptors.switches.Count;
 		if (switchCount == 0)
 		{
 			return;
 		}
-		
+
 		foreach (var jm in junctionMarkers) Destroy(jm.JunctionMarker);
 		junctionMarkers.Clear();
 		foreach (var kvp in TrackObjectManager.Instance._descriptors.switches)
@@ -3358,11 +3361,14 @@ public class MapEnhancer : MonoBehaviour
 		mapBuilder.segmentLineWidthMin = Settings.TrackLineThickness;
 		mapBuilder.segmentLineWidthMax = Settings.MapZoomMax / 5000f * 20;
 
-		var renderTex = mapBuilder.mapCamera.targetTexture;
-		if (renderTex && renderTex.antiAliasing != (int)Settings.MSAA)
+		if (resizer != null)
 		{
-			renderTex.Release();
-			renderTex.antiAliasing = (int)Settings.MSAA;
+			resizer.AdjustRenderTexture();
+		}
+		else
+		{
+			var renderTex = mapBuilder.mapCamera.targetTexture;
+			ConfigureMapRenderTexture(renderTex, mapBuilder.mapCamera, (int)Settings.MSAA);
 		}
 
 		var mapWindow = MapWindow.instance;
@@ -3395,7 +3401,56 @@ public class MapEnhancer : MonoBehaviour
 			MapBuilder.Shared.Rebuild();
 		}
 
-		resizer.SetMinimumSize(Settings.WindowSizeMin);
+		resizer?.SetMinimumSize(Settings.WindowSizeMin);
+	}
+
+	internal static bool IsMapCamera(Camera? camera)
+	{
+		if (camera == null) return false;
+		if (MapBuilder.Shared != null && camera == MapBuilder.Shared.mapCamera) return true;
+		string? name = camera.name;
+		if (name == "Map Camera" || name == "MapCamera") return true;
+		return false;
+	}
+
+	internal static void ConfigureMapRenderTexture(RenderTexture? renderTexture, Camera? camera, int antiAliasing)
+	{
+		if (renderTexture == null)
+			return;
+
+		int targetMsaa = Mathf.Clamp(antiAliasing, 1, 8);
+		if (targetMsaa != 1 && targetMsaa != 2 && targetMsaa != 4 && targetMsaa != 8)
+			targetMsaa = 4;
+		if (targetMsaa > 1 && SystemInfo.supportsMultisampledTextures == 0)
+			targetMsaa = 1;
+
+		if (camera != null)
+		{
+			camera.allowMSAA = targetMsaa > 1;
+		}
+
+		renderTexture.filterMode = FilterMode.Bilinear;
+		if (renderTexture.antiAliasing != targetMsaa || !renderTexture.IsCreated())
+		{
+			if (camera != null && camera.targetTexture == renderTexture)
+				camera.targetTexture = null;
+			if (renderTexture.IsCreated())
+				renderTexture.Release();
+
+			renderTexture.antiAliasing = targetMsaa;
+			renderTexture.Create();
+
+			if (MapWindow.instance != null && MapWindow.instance.rawImage != null)
+			{
+				MapWindow.instance.rawImage.texture = renderTexture;
+				MapWindow.instance.rawImage.SetMaterialDirty();
+			}
+
+			if (camera != null)
+			{
+				camera.targetTexture = renderTexture;
+			}
+		}
 	}
 
 	private static void CreateTraincarPrefab()
@@ -3482,7 +3537,7 @@ public class MapEnhancer : MonoBehaviour
 		tex.wrapMode = TextureWrapMode.Clamp;
 		var sprite = Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f));
 		sprite.name = "MapTurntableIcon";
-		
+
 		_turntablePrefab = Instantiate<MapIcon>(TrainController.Shared.locomotiveMapIconPrefab, prefabHolder.transform);
 		GameObject turntableMarker = _turntablePrefab.gameObject;
 		turntableMarker.hideFlags = HideFlags.HideAndDontSave;
@@ -3580,7 +3635,7 @@ public class MapEnhancer : MonoBehaviour
 			{
 				void OnClick()
 				{
-					if (Instance == null) 
+					if (Instance == null)
 					{
 						marker.OnClick = delegate { CarPickable.HandleShowInspector(car); };
 						CarPickable.HandleShowInspector(car);
@@ -3673,9 +3728,9 @@ public class MapEnhancer : MonoBehaviour
 	{
 		foreach (GameObject flareGO in FlareManager.Shared._instances.Values)
 		{
-				var marker = flareGO.GetComponentInChildren<MapIcon>();
-				if (marker)
-					DestroyImmediate(marker.gameObject);
+			var marker = flareGO.GetComponentInChildren<MapIcon>();
+			if (marker)
+				DestroyImmediate(marker.gameObject);
 		}
 	}
 
@@ -3694,15 +3749,15 @@ public class MapEnhancer : MonoBehaviour
 	private void GatherTurntables()
 	{
 		_turntableHelpers.Clear();
-			
+
 		var turntableControllers = FindObjectsOfType<TurntableController>(true);
 		Loader.Log($"Found {turntableControllers.Length} turntable(s) in scene");
-		
+
 		foreach (var controller in turntableControllers)
 		{
 			if (controller == null || controller.turntable == null)
 				continue;
-			
+
 			// Activate inactive turntables so their components can initialize
 			if (!controller.gameObject.activeInHierarchy)
 			{
@@ -3710,23 +3765,23 @@ public class MapEnhancer : MonoBehaviour
 				controller.gameObject.SetActive(true);
 				Loader.Log($"Activated inactive turntable at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2})");
 			}
-			
+
 			var helper = controller.GetComponent<TurntableHelper>();
 			if (helper == null)
 			{
 				helper = controller.gameObject.AddComponent<TurntableHelper>();
 			}
 			helper.EnsureInitialized();
-			
-		// Set callback to rebuild map after rotation
-		helper.OnRotationComplete = () => 
-		{
-			Instance?.RefreshMapAfterTurntableRotation();
-		};
-			
+
+			// Set callback to rebuild map after rotation
+			helper.OnRotationComplete = () =>
+			{
+				Instance?.RefreshMapAfterTurntableRotation();
+			};
+
 			_turntableHelpers.Add(helper);
 		}
-		
+
 		// Defer marker creation to allow Awake() to complete on all helpers
 		if (_turntableHelpers.Count > 0)
 			StartCoroutine(AddTurntableMarkersNextFrame());
@@ -3738,7 +3793,7 @@ public class MapEnhancer : MonoBehaviour
 		// Inactive turntables that were just activated may take several frames to initialize
 		const int maxWaitFrames = 120;
 		int frameCount = 0;
-		
+
 		while (frameCount < maxWaitFrames)
 		{
 			yield return null;
@@ -3748,14 +3803,14 @@ public class MapEnhancer : MonoBehaviour
 			{
 				helper?.EnsureInitialized();
 			}
-			
+
 			// Check if all helpers are fully initialized
 			if (_turntableHelpers.All(h => h != null && h.IsInitialized))
 			{
 				Loader.Log($"All {_turntableHelpers.Count} turntable helper(s) initialized after {frameCount} frame(s)");
 				break;
 			}
-			
+
 			// Log status every 5 frames to help debug slow initialization
 			if (frameCount % 5 == 0)
 			{
@@ -3763,7 +3818,7 @@ public class MapEnhancer : MonoBehaviour
 				Loader.Log($"Frame {frameCount}: {initializedCount}/{_turntableHelpers.Count} turntable(s) initialized");
 			}
 		}
-		
+
 		// Log any helpers that failed to initialize
 		for (int i = 0; i < _turntableHelpers.Count; i++)
 		{
@@ -3777,7 +3832,7 @@ public class MapEnhancer : MonoBehaviour
 				Loader.Log($"ERROR: Turntable helper #{i} failed to initialize after {maxWaitFrames} frames");
 			}
 		}
-		
+
 		int successCount = 0;
 		foreach (var helper in _turntableHelpers)
 		{
@@ -3789,7 +3844,7 @@ public class MapEnhancer : MonoBehaviour
 				Loader.Log($"Created marker for turntable at ({pos.x:F2}, {pos.y:F2}, {pos.z:F2})");
 			}
 		}
-		
+
 		Loader.Log($"Successfully created {successCount}/{_turntableHelpers.Count} turntable marker(s)");
 		if (successCount < _turntableHelpers.Count)
 			Loader.Log($"WARNING: {_turntableHelpers.Count - successCount} turntable marker(s) failed to create");
@@ -3821,27 +3876,27 @@ public class MapEnhancer : MonoBehaviour
 		var turntablePos = controller.turntable.transform.position;
 		mapIcon.transform.position = WorldTransformer.GameToWorld(turntablePos) + Vector3.up * 2500f;
 		mapIcon.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
-		
+
 		// Remove text label for cleaner look
 		mapIcon.SetText("");
-		
+
 		// Add component to override zoom scaling and keep it large
 		var scaleOverride = mapIcon.gameObject.AddComponent<TurntableIconScaleOverride>();
-		
+
 		// Control visibility based on settings
 		var image = mapIcon.GetComponentInChildren<Image>();
 		if (image != null)
 		{
 			image.enabled = UMM.Loader.Settings.ShowTurntableMarkers;
 		}
-		
+
 		// Increase the RectTransform size for the clickable area
 		var rectTransform = mapIcon.GetComponent<RectTransform>();
 		if (rectTransform != null)
 		{
 			rectTransform.sizeDelta = new Vector2(300f, 300f);
 		}
-		
+
 		mapIcon.OnClick = delegate
 		{
 			// Detect Shift modifier for 180-degree rotation
@@ -3850,7 +3905,7 @@ public class MapEnhancer : MonoBehaviour
 				ShowTurntable180Control(helper);
 				return;
 			}
-			
+
 			// Detect Alt modifier for counterclockwise rotation
 			bool clockwise = !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt);
 			ShowTurntableControl(helper, clockwise);
@@ -3876,8 +3931,8 @@ public class MapEnhancer : MonoBehaviour
 		}
 
 		// Only rotate if Ctrl or Alt is held
-		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl) && 
-		    !Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
+		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl) &&
+			!Input.GetKey(KeyCode.LeftAlt) && !Input.GetKey(KeyCode.RightAlt))
 		{
 			Loader.LogDebug("Turntable controls: Ctrl+Click = clockwise, Alt+Click = counterclockwise, Shift+Click = 180°. Plain click shows this hint only.");
 			return;
@@ -3894,7 +3949,7 @@ public class MapEnhancer : MonoBehaviour
 		bool rotated = clockwise
 			? helper.RotateClockwise()
 			: helper.RotateCounterClockwise();
-		
+
 		if (rotated)
 		{
 			var direction = clockwise ? "clockwise" : "counterclockwise";
@@ -4088,12 +4143,12 @@ public class MapEnhancer : MonoBehaviour
 					{
 						// Default to branch
 						trackColor = Settings.TrackColorBranch;
-						
+
 						if (_mainlineSegments.Contains(closestSegment.id))
 						{
 							trackColor = Settings.TrackColorMainline;
 						}
-						
+
 						if (_industrialSegments.Contains(closestSegment.id)
 							&& !_mainlineSegments.Contains(closestSegment.id)
 							&& !_passengerStopSegments.Contains(closestSegment.id))
@@ -4107,7 +4162,7 @@ public class MapEnhancer : MonoBehaviour
 								trackColor = Settings.TrackColorIndustrial;
 							}
 						}
-						
+
 						if (Settings.EnablePassengerStopTracking && _passengerStopSegments.Contains(closestSegment.id))
 						{
 							trackColor = Settings.TrackColorPax;
@@ -4346,15 +4401,15 @@ public class MapEnhancer : MonoBehaviour
 			// Skip track class modification if using visual-only mode (now always true)
 			if (Instance?.Settings.UseVisualOnlyTrackColors ?? false)
 				return;
-				
+
 			// Only classify tracks after the map is fully loaded to avoid race conditions with other mods
 			if (!_isMapFullyLoaded)
 				return;
-			
+
 			// Don't override industrial tracks that may have been set by other systems
 			if (__instance.trackClass == TrackClass.Industrial)
 				return;
-				
+
 			if (mainlineSegments.Contains(__instance.id))
 				__instance.trackClass = TrackClass.Mainline;
 			else
@@ -4372,11 +4427,11 @@ public class MapEnhancer : MonoBehaviour
 			// Only process active industry components. If an industry isn't active/available
 			// we shouldn't mark its track segments or apply area coloring.
 			if (!__instance.gameObject || !__instance.gameObject.activeInHierarchy) return;
-			
+
 			// Default to yellow if area coloring is disabled
 			Color industryColor = Color.yellow;
 			Area? foundArea = null;
-			
+
 			// Only find area colors if the feature is enabled
 			if (Instance?.Settings.EnableIndustryAreaColors ?? true)
 			{
@@ -4418,7 +4473,7 @@ public class MapEnhancer : MonoBehaviour
 							}
 						}
 					}
-					
+
 					// If not found in any area registry, fall back to position-based
 					Loader.LogDebug($"Industry '{__instance.gameObject.name}' -> NOT FOUND in area registries, trying position fallback");
 					Vector3 worldPosition = __instance.transform.position;
@@ -4431,9 +4486,9 @@ public class MapEnhancer : MonoBehaviour
 					}
 				}
 			}
-			
-			FoundIndustry:
-			
+
+		FoundIndustry:
+
 			// Apply the color to all track segments
 			if (__instance.TrackSpans != null)
 			{
@@ -4450,7 +4505,7 @@ public class MapEnhancer : MonoBehaviour
 							_industrialSegmentColors[seg.id] = industryColor;
 							// Store the industry name for this segment
 							_industrialSegmentNames[seg.id] = __instance.name;
-							
+
 							// TODO: Remove this entire if block when cleaning up non-visual-only mode
 							// Only modify track class if not using visual-only mode (now always true)
 							if (Instance == null || !Instance.Settings.UseVisualOnlyTrackColors)
@@ -4490,88 +4545,88 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private static void Postfix(ref TrackSegment segment, ref Color __result)
 		{
-		// Only apply if visual-only mode is enabled
-		// When visual-only mode is OFF, the TrackColor*Patch methods handle coloring
-		if (Instance == null || !Instance.Settings.UseVisualOnlyTrackColors) return;
+			// Only apply if visual-only mode is enabled
+			// When visual-only mode is OFF, the TrackColor*Patch methods handle coloring
+			if (Instance == null || !Instance.Settings.UseVisualOnlyTrackColors) return;
 
-		// WARNING: Alpha channel is NOT supported by the game's track LineRenderer
-		// Track segments use an opaque shader that ignores alpha values
-		if (!segment.Available)
-		{
-			// When industry area colors are enabled, use custom unreachable color
-			if (Instance.Settings.EnableIndustryAreaColors)
+			// WARNING: Alpha channel is NOT supported by the game's track LineRenderer
+			// Track segments use an opaque shader that ignores alpha values
+			if (!segment.Available)
 			{
-				__result = Instance.Settings.TrackColorUnreachable;
-			}
-			else
-			{
-				__result = Instance.Settings.TrackColorUnavailable;
-			}
-			return;
-		}
-
-		if (Instance.Settings.EnableGradeColorOverlay)
-		{
-			float absGrade = 0f;
-			if (_segmentGrades.TryGetValue(segment.id, out var info))
-			{
-				absGrade = Mathf.Abs(info.Grade);
-			}
-			else
-			{
-				absGrade = Mathf.Abs(Instance.ComputeSegmentGrade(segment));
+				// When industry area colors are enabled, use custom unreachable color
+				if (Instance.Settings.EnableIndustryAreaColors)
+				{
+					__result = Instance.Settings.TrackColorUnreachable;
+				}
+				else
+				{
+					__result = Instance.Settings.TrackColorUnavailable;
+				}
+				return;
 			}
 
-			if (absGrade < 0.1f)
+			if (Instance.Settings.EnableGradeColorOverlay)
 			{
-				__result = Instance.Settings.GradeColorFlat;
-			}
-			else if (absGrade < 1.0f)
-			{
-				__result = Instance.Settings.GradeColor0to1;
-			}
-			else if (absGrade < 2.0f)
-			{
-				__result = Instance.Settings.GradeColor1to2;
-			}
-			else if (absGrade < 3.0f)
-			{
-				__result = Instance.Settings.GradeColor2to3;
-			}
-			else
-			{
-				__result = Instance.Settings.GradeColorAbove3;
-			}
-			return;
-		}
+				float absGrade = 0f;
+				if (_segmentGrades.TryGetValue(segment.id, out var info))
+				{
+					absGrade = Mathf.Abs(info.Grade);
+				}
+				else
+				{
+					absGrade = Mathf.Abs(Instance.ComputeSegmentGrade(segment));
+				}
 
-		// Use HashSet lookups for visual-only mode (don't rely on track class property)
+				if (absGrade < 0.1f)
+				{
+					__result = Instance.Settings.GradeColorFlat;
+				}
+				else if (absGrade < 1.0f)
+				{
+					__result = Instance.Settings.GradeColor0to1;
+				}
+				else if (absGrade < 2.0f)
+				{
+					__result = Instance.Settings.GradeColor1to2;
+				}
+				else if (absGrade < 3.0f)
+				{
+					__result = Instance.Settings.GradeColor2to3;
+				}
+				else
+				{
+					__result = Instance.Settings.GradeColorAbove3;
+				}
+				return;
+			}
+
+			// Use HashSet lookups for visual-only mode (don't rely on track class property)
 			// Default to branch color
 			__result = Instance.Settings.TrackColorBranch;
-			
+
 			// Check mainline (CTC blocks define mainline)
 			if (_mainlineSegments.Contains(segment.id))
 			{
 				__result = Instance.Settings.TrackColorMainline;
 			}
-			
-		// Check industrial (industry tracks override mainline/branch)
-		// BUT: Never show industrial if this is a passenger stop (even if tracking disabled)
-		if (_industrialSegments.Contains(segment.id) 
-			&& !_mainlineSegments.Contains(segment.id)
-			&& !_passengerStopSegments.Contains(segment.id))
-		{
-			// Check if area colors are enabled before using cached colors
-			if (Instance.Settings.EnableIndustryAreaColors && 
-			    _industrialSegmentColors.TryGetValue(segment.id, out Color segmentColor))
+
+			// Check industrial (industry tracks override mainline/branch)
+			// BUT: Never show industrial if this is a passenger stop (even if tracking disabled)
+			if (_industrialSegments.Contains(segment.id)
+				&& !_mainlineSegments.Contains(segment.id)
+				&& !_passengerStopSegments.Contains(segment.id))
 			{
-				__result = segmentColor;
-			}
-			else
-			{
-				__result = Instance.Settings.TrackColorIndustrial;
-			}
-		}			// Check passenger stops (shows purple ONLY if tracking enabled)
+				// Check if area colors are enabled before using cached colors
+				if (Instance.Settings.EnableIndustryAreaColors &&
+					_industrialSegmentColors.TryGetValue(segment.id, out Color segmentColor))
+				{
+					__result = segmentColor;
+				}
+				else
+				{
+					__result = Instance.Settings.TrackColorIndustrial;
+				}
+			}           // Check passenger stops (shows purple ONLY if tracking enabled)
 			if (Instance.Settings.EnablePassengerStopTracking && _passengerStopSegments.Contains(segment.id))
 			{
 				__result = Instance.Settings.TrackColorPax;
@@ -4605,12 +4660,12 @@ public class MapEnhancer : MonoBehaviour
 	{
 		private const float FIXED_SCALE = 0.5f;
 		private Image _image;
-		
+
 		void Start()
 		{
 			_image = GetComponentInChildren<Image>();
 		}
-		
+
 		void LateUpdate()
 		{
 			// Override any zoom-based scaling by forcing a large fixed scale
@@ -4767,7 +4822,7 @@ public class MapEnhancer : MonoBehaviour
 			return codeMatcher.InstructionEnumeration();
 		}
 	}
-	
+
 	[HarmonyPatch(typeof(MapBuilder), nameof(MapBuilder.NormalizedScale), MethodType.Getter)]
 	private static class ChangeMinMaxMapZoom2
 	{
@@ -4852,7 +4907,7 @@ public class MapEnhancer : MonoBehaviour
 			return codeMatcher.InstructionEnumeration();
 		}
 	}
-	
+
 	[HarmonyPatch(typeof(FlarePickable), nameof(FlarePickable.Configure))]
 	private static class FlareAddUpdatePatch
 	{
@@ -4872,6 +4927,57 @@ public class MapEnhancer : MonoBehaviour
 				return false;
 			}
 			return true;
+		}
+	}
+
+	[HarmonyPatch(typeof(UniversalRenderPipeline), "CreateRenderTextureDescriptor")]
+	private static class UrpCreateRenderTextureDescriptorPatch
+	{
+		private static void Prefix(Camera camera, ref int msaaSamples)
+		{
+			if (Instance != null && camera != null && IsMapCamera(camera))
+			{
+				int msaa = (int)Instance.Settings.MSAA;
+				if (msaa > 1 && SystemInfo.supportsMultisampledTextures != 0)
+					msaaSamples = msaa;
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(UniversalRenderPipeline), "InitializeCameraData")]
+	private static class UrpInitializeCameraDataPatch
+	{
+		private static void Postfix(Camera camera, ref CameraData cameraData)
+		{
+			if (Instance != null && camera != null && IsMapCamera(camera))
+			{
+				int msaa = (int)Instance.Settings.MSAA;
+				if (msaa > 1 && SystemInfo.supportsMultisampledTextures != 0)
+				{
+					cameraData.cameraTargetDescriptor.msaaSamples = msaa;
+				}
+			}
+		}
+	}
+
+	[HarmonyPatch(typeof(MapWindow), "SetupRenderTexture")]
+	private static class MapWindowSetupRenderTexturePatch
+	{
+		private static void Postfix(MapWindow __instance)
+		{
+			if (__instance == null || __instance._renderTexture == null)
+				return;
+
+			if (MapResizer.Instance != null)
+			{
+				MapResizer.Instance.AdjustRenderTexture();
+			}
+			else
+			{
+				int msaa = (int)(Instance?.Settings.MSAA ?? MsaaQuality._4x);
+				var camera = MapBuilder.Shared?.mapCamera;
+				ConfigureMapRenderTexture(__instance._renderTexture, camera, msaa);
+			}
 		}
 	}
 
@@ -4980,7 +5086,7 @@ public class MapEnhancer : MonoBehaviour
 	{
 		public Car? Car;
 	}
- 
+
 
 	// Waypoint marker feature removed per user request
 
