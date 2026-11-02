@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- Circular station marker -->
+  <circle cx="24" cy="24" r="20.5"
+          fill="#24211D"
+          stroke="#B59A66"
+          stroke-width="2"/>
+
+  <!-- Depot roof -->
+  <path d="M11.8 22.1 24 13.4l12.2 8.7"
+        stroke="#D9C89E"
+        stroke-width="2.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Depot body -->
+  <path d="M14.2 21.2v12.1h19.6V21.2"
+        fill="#D9C89E"
+        stroke="#D9C89E"
+        stroke-width="1.2"
+        stroke-linejoin="round"/>
+
+  <!-- Door -->
+  <path d="M21 33.3v-8.1h6v8.1"
+        fill="#514A3D"/>
+
+  <!-- Small platform/base -->
+  <path d="M12.5 34.5h23"
+        stroke="#D9C89E"
+        stroke-width="1.8"
+        stroke-linecap="round"/>
+</svg>

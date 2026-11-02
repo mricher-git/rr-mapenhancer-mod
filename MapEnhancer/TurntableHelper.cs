@@ -15,7 +15,8 @@ using Track;
 using UnityEngine;
 using MapEnhancer.UMM;
 
-namespace MapEnhancer;
+namespace MapEnhancer
+{
 
 public class TurntableHelper : MonoBehaviour
 {
@@ -90,7 +91,7 @@ public class TurntableHelper : MonoBehaviour
         {
             if (logFailures)
             {
-                Loader.Log($"TurntableHelper initialization FAILED: No nodes found for turntable at {_controller.turntable.transform.position}");
+                Loader.Log($"TurntableHelper initialization FAILED: No nodes found for turntable at {_controller.turntable.Position}");
             }
 
             return false;
@@ -110,7 +111,7 @@ public class TurntableHelper : MonoBehaviour
             }
         }
 
-        var position = _controller.turntable.transform.position;
+        var position = _controller.turntable.Position;
         _isInitialized = true;
         Loader.Log($"Turntable initialized at ({position.x:F2}, {position.y:F2}, {position.z:F2}) with {_activeIndexes.Count} active track connections");
         RegisterTurntableRequestObserver();
@@ -181,7 +182,7 @@ public class TurntableHelper : MonoBehaviour
             ? _controller.turntable.AngleForIndex(currentIndex)
             : _controller.turntable.AngleForIndex(trackNodeIndex);
         _targetAngle = _controller.turntable.AngleForIndex(trackNodeIndex);
-        _controller.turntable.SetStopIndex(null);
+        _controller.SetStopIndex(null);
         var delta = Mathf.Abs(Mathf.DeltaAngle(_fallbackFromAngle, _targetAngle.Value));
         _fallbackDurationSec = Mathf.Max(0.2f, delta / SMOOTH_ROTATION_SPEED_DEG_PER_SEC);
         _lastNetworkAngleSyncTime = 0f;
@@ -237,7 +238,7 @@ public class TurntableHelper : MonoBehaviour
             if (t >= 1f)
             {
                 _controller.SetAngle(_targetAngle.Value);
-                _controller.turntable.SetStopIndex(_targetIndex);
+                _controller.SetStopIndex(_targetIndex);
                 SyncNetworkStopIndex(_targetAngle.Value, _targetIndex);
                 _targetAngle = null;
                 CompleteRotation($"Turntable rotation completed at track index {_targetIndex}");
@@ -523,7 +524,7 @@ public class TurntableHelper : MonoBehaviour
             return controllerId;
         }
 
-        var position = _controller.turntable.transform.position;
+        var position = _controller.turntable.Position;
         return $"tt:{Mathf.RoundToInt(position.x * 10f)}:{Mathf.RoundToInt(position.y * 10f)}:{Mathf.RoundToInt(position.z * 10f)}";
     }
 
@@ -728,34 +729,12 @@ public class TurntableHelper : MonoBehaviour
     private IPickable? FindPickable(TrackNode targetNode)
     {
         const float maxSearchDistance = 6f;
-        var targetPos = targetNode.transform.position;
+        var targetPos = targetNode.Position;
         var candidates = new List<(IPickable pickable, float dist)>();
 
-        // Directly on target node
-        var direct = targetNode.GetComponent<IPickable>();
-        if (direct != null)
+        if (_controller != null)
         {
-            return direct;
-        }
-
-        // Search target node subtree first
-        foreach (var behaviour in targetNode.GetComponentsInChildren<MonoBehaviour>(true))
-        {
-            if (behaviour is IPickable localPickable)
-            {
-                var dist = Vector3.Distance(targetPos, behaviour.transform.position);
-                if (dist <= maxSearchDistance)
-                {
-                    candidates.Add((localPickable, dist));
-                }
-            }
-        }
-
-        // Some multiplayer turntable prefabs place the actionable pickable elsewhere on the turntable root
-        // instead of inside the track node subtree, so search the full turntable hierarchy as a fallback.
-        if (_controller != null && _controller.turntable != null)
-        {
-            foreach (var behaviour in _controller.turntable.GetComponentsInChildren<MonoBehaviour>(true))
+            foreach (var behaviour in _controller.GetComponentsInChildren<MonoBehaviour>(true))
             {
                 if (behaviour is IPickable turntablePickable)
                 {
@@ -766,27 +745,6 @@ public class TurntableHelper : MonoBehaviour
                     }
                 }
             }
-        }
-
-        // Search only first two parent levels (avoid accidentally selecting global turntable controls)
-        var parent = targetNode.transform.parent;
-        var level = 0;
-        while (parent != null && level < 2)
-        {
-            foreach (var behaviour in parent.GetComponents<MonoBehaviour>())
-            {
-                if (behaviour is IPickable parentPickable)
-                {
-                    var dist = Vector3.Distance(targetPos, behaviour.transform.position);
-                    if (dist <= maxSearchDistance)
-                    {
-                        candidates.Add((parentPickable, dist));
-                    }
-                }
-            }
-
-            parent = parent.parent;
-            level++;
         }
 
         if (candidates.Count == 0)
@@ -819,11 +777,11 @@ public class TurntableHelper : MonoBehaviour
             return false;
         }
 
-        var center = _controller.turntable.transform.position;
+        var center = _controller.turntable.Position;
         float radius = 0f;
         foreach (var node in _nodes)
         {
-            radius += Vector3.Distance(center, node.transform.position);
+            radius += Vector3.Distance(center, node.Position);
         }
 
         radius /= _nodes.Count;
@@ -900,7 +858,7 @@ public class TurntableHelper : MonoBehaviour
             return Vector3.zero;
         }
 
-        return _nodes[index].transform.position;
+        return _nodes[index].Position;
     }
 
     public int GetCurrentIndex()
@@ -993,4 +951,6 @@ public class TurntableHelper : MonoBehaviour
         Loader.LogDebug($"TurntableHelper: Rotating 180 degrees from index {currentIndex} to {oppositeIndex}");
         return MoveToIndex(oppositeIndex);
     }
+}
+
 }

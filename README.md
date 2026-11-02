@@ -1,28 +1,58 @@
-# Map Enhancer
+# Map Enhancer - Community Edition
 
-[![Version](https://img.shields.io/badge/version-1.5.6-blue.svg)](https://github.com/mricher-git/rr-mapenhancer-mod/releases)
-[![Game](https://img.shields.io/badge/Railroader-2025-green.svg)](https://store.steampowered.com/app/1683150/Railroader/)
-[![Download](https://img.shields.io/badge/Download-Latest%20Release-success?logo=github)](https://github.com/mricher-git/rr-mapenhancer-mod/releases/latest)
+[![Version](https://img.shields.io/badge/version-2.0.15--exp-blue.svg)](https://github.com/mricher-git/rr-mapenhancer-mod/tree/reaper-experimental-dev)
+[![Branch](https://img.shields.io/badge/branch-reaper--experimental--dev-orange.svg)](https://github.com/mricher-git/rr-mapenhancer-mod/tree/reaper-experimental-dev)
+[![Game](https://img.shields.io/badge/Railroader-0.6.0%2B%20(Unity%206)-green.svg)](https://store.steampowered.com/app/1683150/Railroader/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Note:** Map Enhancer is an original Railroader mod by Vanguard. Version 1.5.6 includes community fixes and improvements contributed to this repository.
+> **Note:** Map Enhancer is an original Railroader mod created by Vanguard. This eaper-experimental-dev branch includes version 2.0.15 experimental updates, bug fixes, rendering enhancements, and official Railroader 0.6 compatibility contributed by Reaper8f and the community.
 
-## 🎯 About Map Enhancer
+## 🎯 About This Branch
 
-Map Enhancer adds map controls, overlays, track visualization, train information, and tools for managing your railroad. The latest stable release is **v1.5.6**.
+This is the **experimental development branch** (eaper-experimental-dev) for Map Enhancer. It contains the latest features, active development builds, and bug fixes for the official Railroader 0.6+ modding system.
 
-Community contributions are welcome and are maintained together with the original project.
+**All feedback, issue reports, and contributions are appreciated!**
 
-## 📥 Installation
+## 📥 Installation (Railroader 0.6 Official Mod Manager)
 
-1. Download the latest release from the [Releases page](https://github.com/mricher-git/rr-mapenhancer-mod/releases)
-2. Install the mod in Unity Mod Manager
-3. Launch Railroader and configure your preferred settings
+1. Download or package anguard-map-enhancer_v2.0.15.zip:
+   - Run .\package.ps1 -Action Package or uild.bat from this repository.
+2. Extract the archive contents into your Railroader mods directory:
+   `	ext
+   Documents\Railroader\Mods\vanguard-map-enhancer\
+   `
+   *(Or run .\package.ps1 -Action Deploy to build and install automatically!)*
+3. Enable Unsafe DLL Mods in-game:
+   - In Railroader, open **Preferences → Features → Experimental**.
+   - Set **Allow Unsafe DLL Mods** to **ON**.
+   - Restart the game.
+4. From the main menu, click **Mods** and enable **Map Enhancer**.
+
+For developers and compilation instructions, see [docs/BUILDING.md](docs/BUILDING.md).
 
 ## ✨ Features
 
-### Recent Improvements
+### 🧪 Experimental Branch (v2.0.15 Highlights)
 
-#### **v1.5.6** (2026-07-21)
+- 🚀 **Full Railroader 0.6 Native Mod Architecture:** Implements official Railroader.Modding contracts (IModEntryPoint, IWorldLifecycle).
+- 🗺️ **Multi-Tier Mainline Detection Engine:** Intelligent Dijkstra corridor pathfinding with turn penalties (+50m) for diverging switches to avoid siding chord misclassification (such as East Whittier MOW siding). Traces continuous mainline through dark territory gaps using Timetable "Main" branch station ordering (Sylva–Whittier, Bryson–Andrews).
+- 🎨 **Anti-Aliasing (AA) & Rendering Overhaul:** Analytical SDF quad line shading eliminating ghost dotted lines and low-zoom texture shimmering. Fixed camera aspect ratio fitting, UI culling, and high-DPI scaling.
+- 🚨 **Consist HOPA Alerts:** Lateral operational alert badges (Hotbox, Overweight, Problem, Air leak) rendered directly beside train consists with screen-upright rotation.
+- ⚡ **FRA Track Safety Classes (0–5):** Speed limit visualizations (10, 25, 40, 60, 80 mph) and track degradation tracking.
+- 🚉 **Station Intelligence:** Gold-rimmed station markers with directional passenger breakdown tooltips.
+- ⚙️ **Official In-Game Settings Window:** Dedicated settings UI integrated with native game preferences and safe JSON settings persistence.
+- 📜 **Clean MIT Open-Source:** Maintained under standard MIT License with Vanguard as author and community contributions.
+
+### 🆕 Previous Community Migration Features
+
+### **Railroader 0.6 Official Migration** v2.0.0 (2026-10-28)
+- 🚀 **Full Railroader 0.6 Native Mod Support:** Official `Railroader.Modding` contracts (`IModEntryPoint`, `IWorldLifecycle`).
+- 🛠️ **Fixed Harmony Overload Ambiguity:** Qualified `MapBuilder.Add(MapIcon)` patch, enabling all track and zoom patches.
+- 💾 **Fixed Settings Serialization:** Eliminated self-referencing color recursion with custom JSON color serializer.
+- 🎯 **Fixed CullingManager Collisions:** Isolated canvas marker culling from game scenery culling.
+- 📋 See [Release Notes](docs/RELEASE_NOTES_v2.0.0.md) for full details.
+
+### **Fixes and Improvements** v1.5.6 (2026-07-21)
 
 - 🛠️ Added: **Enable Debug Logging** setting
   - Added a dedicated toggle to enable verbose diagnostic logging only when needed.
@@ -64,8 +94,8 @@ Community contributions are welcome and are maintained together with the origina
 - 🧭 Added: Marker placement offset beside the track for improved readability
 
 #### **Road Crossing Markers** (v1.5.4.4)
-![Road crossing markers](https://i.ibb.co/Vc09M3PP/image.png)
-![Road crossing marker clustering](https://i.ibb.co/6RncbXKt/image.png)
+Image1: https://i.ibb.co/Vc09M3PP/image.png
+Image2: https://i.ibb.co/6RncbXKt/image.png
 - 🛣️ Added: Road crossing markers on the map (uses `level-crossing.png`)
 - 🧭 Added: Clustering for nearby crossing points to avoid duplicate icons at multi-track crossings
 - ⚙️ Added: `Show Road Crossing Markers` toggle in settings
@@ -76,8 +106,8 @@ Community contributions are welcome and are maintained together with the origina
 - ✅ Default: Enabled, but can be disabled if the automatic fouling check is too strict
 
 #### **Turntable Control from Map** (v1.5.4.3)
-![Turntable controls](https://i.ibb.co/spwqpXrW/image.png)
-[Turntable controls video](https://youtu.be/zMtQZzuPjXE)
+Image1: https://i.ibb.co/spwqpXrW/image.png
+Video: https://youtu.be/zMtQZzuPjXE
 - 🎯 Smooth rotation of the turntable using the Map controls
 - 🛜 Multiplayer sync for host and client
 - 🚂 When the table fouled, the rotation is blocked
@@ -237,9 +267,9 @@ Community contributions are welcome and are maintained together with the origina
 - 💾 Colors persist between sessions
 - 🔄 Reset to defaults available
 
-### Highlights
+### 🆕 What's New in This Fork
 
-Map Enhancer includes the original features below along with the community improvements listed above:
+This fork includes **ALL original Map Enhancer features** plus community improvements:
 
 - 🧠 **Train & Cargo Intelligence** - Aggregated consist stats, fuel tracker, and freight/destination summary (v1.5.5)
 - 🚃 **Individual Car Tooltips** - Car identifiers, waybill delivery status, cargo loads, journal oil health tracker and predictive alerts (v1.5.5)
@@ -285,6 +315,7 @@ All settings are available and shown when game first launches.
 - **Require Double Click**: Toggle for double-click requirement on map interactions
 - **Show Turntable Markers**: Toggle visibility of turntable markers (default: ON)
 - **Check Turntable Clearance/Fouling Before Rotation**: Block turntable rotation when fouled (default: ON)
+- **Check Turntable Clearance/Fouling Before Rotation**: Block turntable rotation when fouled (default: ON)
 
 ### Keyboard Bindings
 - **Toggle Map Size**: Default `Z` (customizable)
@@ -316,7 +347,7 @@ Customize colors for all track types with RGBA sliders:
 
 ## 🐛 Known Issues
 
-- Compatibility may vary with other mods that modify the map or track classification.
+- I don't know!
 
 ## 💬 Feedback & Support
 
@@ -325,13 +356,35 @@ All feedback, bug reports, and feature requests are welcomed!
 - **Discord Forum**: [Map Enhancer Discussion](https://discord.com/channels/795878618697433097/1212693563738034196)
 - **Railroader Official Discord**: [Join Discord](https://discord.gg/r8xeTPAnhw)
 - **RTM Discord**: [Join Discord](https://discord.gg/zyg4CXg32N)
-- **Issues**: Report bugs in the [issue tracker](https://github.com/mricher-git/rr-mapenhancer-mod/issues)
+- **Issues**: Report bugs on discord forum or [Create issue](https://github.com/Refizar08/rr-mapenhancer-fix/issues)
+- **Maintainer**: Reaper8f on Discord
 
 ## 🤝 Contributing
 
-Contributions are welcome. Please open an issue or pull request with details about the proposed change.
+Contributions and feedback are welcome! Please feel free to submit issues, bug reports, or pull requests against the eaper-experimental-dev branch. All contributions are licensed under the [MIT License](LICENSE).
 
 ## 📜 Version History
+
+### v2.0.15 (2026-11-02 — Experimental Branch)
+- 🚀 **Mainline Detection Engine & Topology Routing:**
+  - Multi-tier detection algorithm replacing naive CTC block search with corridor Dijkstra search.
+  - Added turn penalties (+50m) for diverging switches to avoid siding chord misclassification (e.g., East Whittier MOW siding).
+  - Traces continuous mainline through dark territory gaps using Timetable "Main" branch station ordering (Sylva–Whittier, Bryson–Andrews).
+- 🎨 **Anti-Aliasing (AA) & Map Rendering Improvements:**
+  - Fixed map camera rendering artifacts, aspect ratio fitter behavior, and high-DPI scaling.
+  - Analytical SDF quad line shading eliminating ghost dotted lines and low-zoom texture shimmering.
+  - Cleaned up icon alignment, culling, and canvas hierarchy.
+- 🚨 **HOPA Alerts System:**
+  - Lateral operational alert badges (Hotbox, Overweight, Problem, Air leak) rendered directly beside train consists.
+  - Upright rotation lock ensuring alerts remain readable regardless of map orientation.
+- ⚡ **FRA Track Speed Classes:**
+  - Full visualization for official Railroader 0.6 FRA Track Safety Classes (Class 0 to Class 5: 10, 25, 40, 60, 80 mph).
+- 🚉 **Station Intelligence & Passenger Flows:**
+  - Station marker rendering with directional passenger breakdown tooltips.
+- ⚙️ **Official In-Game Mod Settings Window:**
+  - Dedicated Map Enhancer settings UI integrated with game preferences and safe JSON settings persistence.
+- 📜 **MIT Open-Source Licensing:**
+  - Fully licensed under MIT honoring Vanguard as original creator with community contributions.
 
 ### v1.5.6 (2026-07-21)
 - ✨ Fix debug logging spam in player.log
@@ -453,20 +506,20 @@ Contributions are welcome. Please open an issue or pull request with details abo
 - 🔌 Improved: Compatibility with other map/track mods
 
 ### Previous Versions
-See [Releases](https://github.com/mricher-git/rr-mapenhancer-mod/releases) for complete version history.
+See [Releases](https://github.com/Refizar08/rr-mapenhancer-fix/releases) for complete version history.
 
 ## 📋 Credits
 
 - **Original Author**: Vanguard - [Original Nexus Mods Page](https://www.nexusmods.com/railroader/mods/18/)
-- **Community Contributor**: Reaper8f
-- **Contributors**: Thanks to all community members who contributed fixes, testing, and documentation.
+- **Contributors**: Reaper8f, and community contributors
 
 ## 📄 License
 
-This project maintains the same license as the original Map Enhancer mod.
+This project is licensed under the [MIT License](LICENSE).
+Copyright (c) 2023 Michael Richer a.k.a. Vanguard. Contributions by Reaper8f.
 
 ---
 
 **🎮 Happy Railroading!**
 
-*Community improvements are included in the main repository with the original author's project history and credits preserved.*
+*This fork is not officially affiliated with or endorsed by the original Map Enhancer author. It's a community effort to keep the mod functional and improved while we await official updates.*

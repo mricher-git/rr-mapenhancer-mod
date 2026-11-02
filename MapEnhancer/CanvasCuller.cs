@@ -6,38 +6,88 @@ using UnityEngine;
 
 public class CanvasCuller : MonoBehaviour, CullingManager.ICullingEventHandler
 {
+	private static CullingManager? _canvasCullingManager;
+
+	public static void Clear()
+	{
+		if (_canvasCullingManager != null)
+		{
+			Destroy(_canvasCullingManager.gameObject);
+			_canvasCullingManager = null;
+		}
+	}
+
 	private void Awake()
 	{
 		canvas = transform.GetComponent<Canvas>();
+		if (canvas == null)
+		{
+			enabled = false;
+			Destroy(this);
+			return;
+		}
 	}
 
 	private void OnEnable()
 	{
-		CullingManager.Token cullingToken = _cullingToken;
-		if (cullingToken != null)
+		if (canvas == null)
 		{
-			cullingToken.Dispose();
+			canvas = transform.GetComponent<Canvas>();
+			if (canvas == null)
+			{
+				enabled = false;
+				Destroy(this);
+				return;
+			}
 		}
 
-		CullingManager cullingManager = FindObjectOfType<CullingManager>();
-		if (cullingManager == null)
+		if (_cullingToken != null)
 		{
-			GameObject go = new GameObject("CanvasCullingManager");
-			cullingManager = go.AddComponent<CullingManager>();
-			cullingManager.Configure("canvas", new[] { float.PositiveInfinity });
-		}  
-		_cullingToken = cullingManager.AddSphere(transform, radius, this);
-		_cullingToken.RegisterFixedUpdate(transform);
-		var camera = MapBuilder.Shared.mapCamera;
-		cullingManager._cullingGroup.targetCamera = camera;
-		cullingManager._cullingGroup.SetDistanceReferencePoint(camera.transform);
-		return;
+			_cullingToken.Dispose();
+			_cullingToken = null;
+		}
+
+		if (_canvasCullingManager == null)
+		{
+			GameObject go = new GameObject("MapEnhancer_CanvasCullingManager");
+			DontDestroyOnLoad(go);
+			// Deactivate before AddComponent so CullingManager.OnEnable() does not execute before Configure()
+			go.SetActive(false);
+			_canvasCullingManager = go.AddComponent<CullingManager>();
+			_canvasCullingManager.Configure("canvas", new[] { float.PositiveInfinity }, 128);
+			go.SetActive(true);
+		}
+
+		var camera = MapBuilder.Shared?.mapCamera;
+		if (camera != null && _canvasCullingManager != null && _canvasCullingManager._cullingGroup != null)
+		{
+			_canvasCullingManager._cullingGroup.targetCamera = camera;
+			_canvasCullingManager._cullingGroup.SetDistanceReferencePoint(camera.transform);
+		}
+
+		if (_canvasCullingManager != null)
+		{
+			_cullingToken = _canvasCullingManager.AddSphere(transform, radius, this);
+			_cullingToken?.RegisterFixedUpdate(transform);
+		}
 	}
 
 	private void OnDisable()
 	{
-		_cullingToken.Dispose();
-		_cullingToken = null;
+		if (_cullingToken != null)
+		{
+			_cullingToken.Dispose();
+			_cullingToken = null;
+		}
+	}
+
+	private void OnDestroy()
+	{
+		if (_cullingToken != null)
+		{
+			_cullingToken.Dispose();
+			_cullingToken = null;
+		}
 	}
 
 	public void CullingSphereStateChanged(bool isVisible, int distanceBand)
@@ -48,16 +98,18 @@ public class CanvasCuller : MonoBehaviour, CullingManager.ICullingEventHandler
 			return;
 		}
 		_cullingState = cullingState;
-		bool flag = _cullingState == CanvasCuller.CullingState.Visible;
-		canvas.enabled = flag;
+		if (canvas != null)
+		{
+			canvas.enabled = (_cullingState == CanvasCuller.CullingState.Visible);
+		}
 	}
 
 	public void RequestUpdateCullingPosition()
 	{
-		_cullingToken.UpdatePosition(transform);
+		_cullingToken?.UpdatePosition(transform);
 	}
 
-	private CullingManager.Token _cullingToken;
+	private CullingManager.Token? _cullingToken;
 
 	private CanvasCuller.CullingState _cullingState;
 

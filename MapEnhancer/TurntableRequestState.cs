@@ -1,55 +1,56 @@
 using KeyValue.Runtime;
 using System.Collections.Generic;
 
-namespace MapEnhancer;
-
-internal sealed class TurntableRequestState
+namespace MapEnhancer
 {
-    private const string KeyTurntableId = "turntable_id";
-    private const string KeyTrackNodeIndex = "track_node_index";
-    private const string KeySequence = "sequence";
-
-    public TurntableRequestState(string turntableId, int trackNodeIndex, int sequence)
+    internal sealed class TurntableRequestState
     {
-        TurntableId = turntableId;
-        TrackNodeIndex = trackNodeIndex;
-        Sequence = sequence;
-    }
+        private const string KeyTurntableId = "turntable_id";
+        private const string KeyTrackNodeIndex = "track_node_index";
+        private const string KeySequence = "sequence";
 
-    public string TurntableId { get; }
-
-    public int TrackNodeIndex { get; }
-
-    public int Sequence { get; }
-
-    public Value ToPropertyValue()
-    {
-        return Value.Dictionary(new Dictionary<string, Value>
+        public TurntableRequestState(string turntableId, int trackNodeIndex, int sequence)
         {
-            [KeyTurntableId] = Value.String(TurntableId),
-            [KeyTrackNodeIndex] = Value.Int(TrackNodeIndex),
-            [KeySequence] = Value.Int(Sequence),
-        });
-    }
-
-    public static TurntableRequestState? FromPropertyValue(Value value)
-    {
-        if (value.IsNull || value.Type != ValueType.Dictionary)
-        {
-            return null;
+            TurntableId = turntableId;
+            TrackNodeIndex = trackNodeIndex;
+            Sequence = sequence;
         }
 
-        var dictionary = value.DictionaryValue;
-        if (!dictionary.TryGetValue(KeyTurntableId, out var turntableIdValue) ||
-            !dictionary.TryGetValue(KeyTrackNodeIndex, out var trackNodeIndexValue) ||
-            !dictionary.TryGetValue(KeySequence, out var sequenceValue))
+        public string TurntableId { get; }
+
+        public int TrackNodeIndex { get; }
+
+        public int Sequence { get; }
+
+        public Value ToPropertyValue()
         {
-            return null;
+            return Value.Dictionary(new Dictionary<string, Value>
+            {
+                [KeyTurntableId] = Value.String(TurntableId),
+                [KeyTrackNodeIndex] = Value.Int(TrackNodeIndex),
+                [KeySequence] = Value.Int(Sequence),
+            });
         }
 
-        return new TurntableRequestState(
-            turntableIdValue.StringValue,
-            trackNodeIndexValue.IntValue,
-            sequenceValue.IntValue);
+        public static TurntableRequestState? FromPropertyValue(Value value)
+        {
+            if (value.IsNull || value.Type != ValueType.Dictionary)
+            {
+                return null;
+            }
+
+            var dictionary = value.DictionaryValue;
+            if (!dictionary.TryGetValue(KeyTurntableId, out var turntableIdValue) ||
+                !dictionary.TryGetValue(KeyTrackNodeIndex, out var trackNodeIndexValue) ||
+                !dictionary.TryGetValue(KeySequence, out var sequenceValue))
+            {
+                return null;
+            }
+
+            return new TurntableRequestState(
+                turntableIdValue.StringValue,
+                trackNodeIndexValue.IntValue,
+                sequenceValue.IntValue);
+        }
     }
 }

@@ -4,66 +4,67 @@ using KeyValue.Runtime;
 using System;
 using System.Linq;
 
-namespace MapEnhancer;
-
-internal sealed class SwitchResetAuditStorage : IPropertyAccessControlDelegate, IDisposable
+namespace MapEnhancer
 {
-    public const string ObjectId = "_mapEnhancer.switchResetAudit";
-
-    private readonly KeyValueObject _keyValueObject;
-
-    public SwitchResetAuditStorage(KeyValueObject keyValueObject)
+    internal sealed class SwitchResetAuditStorage : IPropertyAccessControlDelegate, IDisposable
     {
-        _keyValueObject = keyValueObject;
-        StateManager.Shared.RegisterPropertyObject(ObjectId, keyValueObject, this);
-    }
+        public const string ObjectId = "_mapEnhancer.switchResetAudit";
 
-    public AuthorizationRequirementInfo AuthorizationRequirementForPropertyWrite(string key)
-    {
-        return AuthorizationRequirement.MinimumLevelCrew;
-    }
+        private readonly KeyValueObject _keyValueObject;
 
-    public void Dispose()
-    {
-        if (_keyValueObject != null)
+        public SwitchResetAuditStorage(KeyValueObject keyValueObject)
         {
-            UnityEngine.Object.DestroyImmediate(_keyValueObject);
-            StateManager.Shared.UnregisterPropertyObject(ObjectId);
-        }
-    }
-
-    public void Write(string key, SwitchResetAuditState state)
-    {
-        _keyValueObject[key] = state.ToPropertyValue();
-    }
-
-    public string[] Keys()
-    {
-        return _keyValueObject.Keys.ToArray();
-    }
-
-    public bool TryRead(string key, out SwitchResetAuditState? state)
-    {
-        state = null;
-        if (!_keyValueObject.Keys.Contains(key))
-        {
-            return false;
+            _keyValueObject = keyValueObject;
+            StateManager.Shared.RegisterPropertyObject(ObjectId, keyValueObject, this);
         }
 
-        state = SwitchResetAuditState.FromPropertyValue(_keyValueObject[key]);
-        return true;
-    }
-
-    public IDisposable ObserveRequests(Action<string, SwitchResetAuditState?> action)
-    {
-        return _keyValueObject.ObserveKeyChanges((key, keyChange) =>
+        public AuthorizationRequirementInfo AuthorizationRequirementForPropertyWrite(string key)
         {
-            if (keyChange == KeyChange.Remove || !_keyValueObject.Keys.Contains(key))
+            return AuthorizationRequirement.MinimumLevelCrew;
+        }
+
+        public void Dispose()
+        {
+            if (_keyValueObject != null)
             {
-                return;
+                UnityEngine.Object.DestroyImmediate(_keyValueObject);
+                StateManager.Shared.UnregisterPropertyObject(ObjectId);
+            }
+        }
+
+        public void Write(string key, SwitchResetAuditState state)
+        {
+            _keyValueObject[key] = state.ToPropertyValue();
+        }
+
+        public string[] Keys()
+        {
+            return _keyValueObject.Keys.ToArray();
+        }
+
+        public bool TryRead(string key, out SwitchResetAuditState? state)
+        {
+            state = null;
+            if (!_keyValueObject.Keys.Contains(key))
+            {
+                return false;
             }
 
-            action(key, SwitchResetAuditState.FromPropertyValue(_keyValueObject[key]));
-        });
+            state = SwitchResetAuditState.FromPropertyValue(_keyValueObject[key]);
+            return true;
+        }
+
+        public IDisposable ObserveRequests(Action<string, SwitchResetAuditState?> action)
+        {
+            return _keyValueObject.ObserveKeyChanges((key, keyChange) =>
+            {
+                if (keyChange == KeyChange.Remove || !_keyValueObject.Keys.Contains(key))
+                {
+                    return;
+                }
+
+                action(key, SwitchResetAuditState.FromPropertyValue(_keyValueObject[key]));
+            });
+        }
     }
 }

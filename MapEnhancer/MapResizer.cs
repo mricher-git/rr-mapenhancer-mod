@@ -1,3 +1,5 @@
+using MapEnhancer.UMM;
+using UI.Windows;
 using UI.Common;
 using UI.Map;
 using UnityEngine;
@@ -50,7 +52,7 @@ namespace MapEnhancer
 			// Use the window's InitialContentSize which is the vanilla size scaled by UI settings
 			// This respects screen resolution and UI scale from game settings
 			originalSize = window.InitialContentSize + new Vector2(48f, 48f); // Add typical window frame margins
-			var scale = MapEnhancer.Instance.Settings.WindowSizeMin / 800f;
+			var scale = (MapEnhancer.Instance?.Settings.WindowSizeMin ?? Loader.Settings.WindowSizeMin) / 800f;
 			defaultSize = new Vector2(originalSize.x * scale, originalSize.y * scale);
 			minSize = defaultSize; // Keep minSize for compatibility
 			aspect = originalSize.x / originalSize.y;

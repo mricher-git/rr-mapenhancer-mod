@@ -1,104 +1,138 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<AssemblyName>MapEnhancer</AssemblyName>
-		<TargetFramework>net48</TargetFramework>
-		<LangVersion>latest</LangVersion>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>9.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<WarningsAsErrors>CS8600;CS8602;CS8603</WarningsAsErrors>
+		<Version>2.0.1</Version>
+		<AssemblyVersion>2.0.1.0</AssemblyVersion>
 	</PropertyGroup>
 
 	<!-- Krafs Publicizer -->
 	<ItemGroup>
-		<Publicize Include="Assembly-CSharp" IncludeCompilerGeneratedMembers="false" />
+		<Publicize Include="Railroader" IncludeCompilerGeneratedMembers="false" />
 	</ItemGroup>
 
 	<!-- Railroader -->
 	<ItemGroup>
-		<Reference Include="Assembly-CSharp">
-			<HintPath>$(RrManagedDir)\Assembly-CSharp.dll</HintPath>
+		<Reference Include="netstandard">
+			<HintPath>$(RrManagedDir)\netstandard.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Railroader.Modding">
+			<HintPath>$(RrManagedDir)\Railroader.Modding.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Railroader">
+			<HintPath>$(RrManagedDir)\Railroader.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Core">
 			<HintPath>$(RrManagedDir)\Core.dll</HintPath>
-		</Reference>
-		<Reference Include="Definition">
-			<HintPath>$(RrManagedDir)\Definition.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Map.Runtime">
 			<HintPath>$(RrManagedDir)\Map.Runtime.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="KeyValue.Runtime">
 			<HintPath>$(RrManagedDir)\KeyValue.Runtime.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+			<HintPath>$(RrManagedDir)\Newtonsoft.Json.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
 
-	<!-- Mod Loader -->
+	<!-- Mod Tooling / Libraries -->
 	<ItemGroup>
-		<PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
-		<PackageReference Include="UnityModManager" Version="0.27.5" PrivateAssets="all" />
+		<PackageReference Include="Krafs.Publicizer" Version="2.2.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Lib.Harmony" Version="2.3.3" />
 	</ItemGroup>
 
-	<!-- Null Checking -->
+	<!-- Null Checking & Standard Types -->
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
 		<PackageReference Include="Nullable" Version="1.3.1" PrivateAssets="all" />
+		<PackageReference Include="System.Memory" Version="4.5.5" />
 	</ItemGroup>
 
-	<!-- Unity -->
+	<!-- Unity 6 References -->
 	<ItemGroup>
 		<Reference Include="UnityEngine">
 			<HintPath>$(RrManagedDir)\UnityEngine.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.TextRenderingModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.IMGUIModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.IMGUIModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.InputModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.InputModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.PhysicsModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.PhysicsModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UI">
 			<HintPath>$(RrManagedDir)\UnityEngine.UI.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.UIModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.UIModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.ImageConversionModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.InputLegacyModule">
 			<HintPath>$(RrManagedDir)\UnityEngine.InputLegacyModule.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.InputSystem">
 			<HintPath>$(RrManagedDir)\Unity.InputSystem.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.RenderPipelines.Universal.Runtime">
 			<HintPath>$(RrManagedDir)\Unity.RenderPipelines.Universal.Runtime.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 		<Reference Include="Unity.TextMeshPro">
 			<HintPath>$(RrManagedDir)\Unity.TextMeshPro.dll</HintPath>
+			<Private>false</Private>
 		</Reference>
 	</ItemGroup>
 	
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<!-- Copy to build folder -->
-		<Copy SourceFiles="$(TargetPath)" DestinationFolder="../build/" />
-		<Copy SourceFiles="$(ProjectDir)\arrow.png" DestinationFolder="../build/" />
-		<Copy SourceFiles="$(ProjectDir)\traincar.png" DestinationFolder="../build/" />
-		<Copy SourceFiles="$(ProjectDir)\flare.png" DestinationFolder="../build/" />
-		<Copy SourceFiles="$(ProjectDir)\level-crossing.png" DestinationFolder="../build/" />
+		<PropertyGroup>
+			<BuildDir>$(ProjectDir)..\build\</BuildDir>
+		</PropertyGroup>
 
-		<!-- Package after Release build -->
-		<Exec Condition="'$(ConfigurationName)' == 'Release' And '$(OS)' == 'Windows_NT'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1)&quot;" />
-		<Exec Condition="'$(ConfigurationName)' == 'Release' And '$(OS)' != 'Windows_NT'" Command="pwsh -Command &quot;(../package.ps1)&quot;" />
-		<!-- Copy to game install folder -->
-		<Exec Condition="Exists('$(RrInstallDir)') And '$(OS)' == 'Windows_NT'" Command="powershell -executionpolicy bypass -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(RrInstallDir)\Mods')&quot;" />
-		<Exec Condition="Exists('$(RrInstallDir)') And '$(OS)' != 'Windows_NT'" Command="pwsh  -Command &quot;(../package.ps1 -NoArchive -OutputDirectory '$(RrInstallDir)/Mods')&quot;" />
+		<!-- Copy build output and assets to local build folder -->
+		<MakeDir Directories="$(BuildDir)" />
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(TargetDir)0Harmony.dll" DestinationFolder="$(BuildDir)" Condition="Exists('$(TargetDir)0Harmony.dll')" />
+		<Copy SourceFiles="$(ProjectDir)..\Info.json" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)arrow.png" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)traincar.png" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)flare.png" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)level-crossing.png" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)station.png" DestinationFolder="$(BuildDir)" />
+		<Copy SourceFiles="$(ProjectDir)mapenhancer-station-marker.svg" DestinationFolder="$(BuildDir)" />
 	</Target>
 </Project>

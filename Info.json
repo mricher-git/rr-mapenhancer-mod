@@ -1,0 +1,15 @@
+{
+  "identifier": "vanguard/map-enhancer",
+  "name": "Map Enhancer",
+  "version": "2.0.15",
+  "author": "Vanguard, Reaper8f",
+  "license": "MIT",
+  "assemblies": [
+    "MapEnhancer.dll"
+  ],
+  "dependencies": {
+    "required": [
+      "rr/game >=0.6.0"
+    ]
+  }
+}

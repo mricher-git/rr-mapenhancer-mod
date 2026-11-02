@@ -3,44 +3,45 @@ using Game.State;
 using KeyValue.Runtime;
 using System;
 
-namespace MapEnhancer;
-
-internal sealed class TurntableRequestStorage : IPropertyAccessControlDelegate, IDisposable
+namespace MapEnhancer
 {
-    public const string ObjectId = "_mapEnhancer.turntableRequests";
-
-    private readonly KeyValueObject _keyValueObject;
-
-    public TurntableRequestStorage(KeyValueObject keyValueObject)
+    internal sealed class TurntableRequestStorage : IPropertyAccessControlDelegate, IDisposable
     {
-        _keyValueObject = keyValueObject;
-        StateManager.Shared.RegisterPropertyObject(ObjectId, keyValueObject, this);
-    }
+        public const string ObjectId = "_mapEnhancer.turntableRequests";
 
-    public AuthorizationRequirementInfo AuthorizationRequirementForPropertyWrite(string key)
-    {
-        return AuthorizationRequirement.MinimumLevelCrew;
-    }
+        private readonly KeyValueObject _keyValueObject;
 
-    public void Dispose()
-    {
-        if (_keyValueObject != null)
+        public TurntableRequestStorage(KeyValueObject keyValueObject)
         {
-            UnityEngine.Object.DestroyImmediate(_keyValueObject);
-            StateManager.Shared.UnregisterPropertyObject(ObjectId);
+            _keyValueObject = keyValueObject;
+            StateManager.Shared.RegisterPropertyObject(ObjectId, keyValueObject, this);
         }
-    }
 
-    public void SendRequest(TurntableRequestState request)
-    {
-        _keyValueObject[request.TurntableId] = request.ToPropertyValue();
-    }
-
-    public IDisposable ObserveRequest(string turntableId, Action<TurntableRequestState?> action, bool callInitial)
-    {
-        return _keyValueObject.Observe(turntableId, value =>
+        public AuthorizationRequirementInfo AuthorizationRequirementForPropertyWrite(string key)
         {
-            action(TurntableRequestState.FromPropertyValue(value));
-        }, callInitial);
+            return AuthorizationRequirement.MinimumLevelCrew;
+        }
+
+        public void Dispose()
+        {
+            if (_keyValueObject != null)
+            {
+                UnityEngine.Object.DestroyImmediate(_keyValueObject);
+                StateManager.Shared.UnregisterPropertyObject(ObjectId);
+            }
+        }
+
+        public void SendRequest(TurntableRequestState request)
+        {
+            _keyValueObject[request.TurntableId] = request.ToPropertyValue();
+        }
+
+        public IDisposable ObserveRequest(string turntableId, Action<TurntableRequestState?> action, bool callInitial)
+        {
+            return _keyValueObject.Observe(turntableId, value =>
+            {
+                action(TurntableRequestState.FromPropertyValue(value));
+            }, callInitial);
+        }
     }
 }
