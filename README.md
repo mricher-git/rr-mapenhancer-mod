@@ -5,23 +5,23 @@
 [![Game](https://img.shields.io/badge/Railroader-0.6.0%2B%20(Unity%206)-green.svg)](https://store.steampowered.com/app/1683150/Railroader/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Note:** Map Enhancer is an original Railroader mod created by Vanguard. This eaper-experimental-dev branch includes version 2.0.15 experimental updates, bug fixes, rendering enhancements, and official Railroader 0.6 compatibility contributed by Reaper8f and the community.
+> **Note:** Map Enhancer is an original Railroader mod created by Vanguard. This `reaper-experimental-dev` branch includes version 2.0.15 experimental updates, bug fixes, rendering enhancements, and official Railroader 0.6 compatibility contributed by Reaper8f and the community.
 
 ## 🎯 About This Branch
 
-This is the **experimental development branch** (eaper-experimental-dev) for Map Enhancer. It contains the latest features, active development builds, and bug fixes for the official Railroader 0.6+ modding system.
+This is the **experimental development branch** (`reaper-experimental-dev`) for Map Enhancer. It contains the latest features, active development builds, and bug fixes for the official Railroader 0.6+ modding system.
 
 **All feedback, issue reports, and contributions are appreciated!**
 
 ## 📥 Installation (Railroader 0.6 Official Mod Manager)
 
-1. Download or package anguard-map-enhancer_v2.0.15.zip:
-   - Run .\package.ps1 -Action Package or uild.bat from this repository.
+1. Download or package `vanguard-map-enhancer_v2.0.15.zip`:
+   - Run `.\package.ps1 -Action Package` or `build.bat` from this repository.
 2. Extract the archive contents into your Railroader mods directory:
-   `	ext
+   ```text
    Documents\Railroader\Mods\vanguard-map-enhancer\
-   `
-   *(Or run .\package.ps1 -Action Deploy to build and install automatically!)*
+   ```
+   *(Or run `.\package.ps1 -Action Deploy` to build and install automatically!)*
 3. Enable Unsafe DLL Mods in-game:
    - In Railroader, open **Preferences → Features → Experimental**.
    - Set **Allow Unsafe DLL Mods** to **ON**.
@@ -361,7 +361,8 @@ All feedback, bug reports, and feature requests are welcomed!
 
 ## 🤝 Contributing
 
-Contributions and feedback are welcome! Please feel free to submit issues, bug reports, or pull requests against the eaper-experimental-dev branch. All contributions are licensed under the [MIT License](LICENSE).
+Contributions and feedback are welcome! Please feel free to submit issues, bug reports, or pull requests against the `reaper-experimental-dev` branch. All contributions are licensed under the [MIT License](LICENSE).
+
 
 ## 📜 Version History
 
